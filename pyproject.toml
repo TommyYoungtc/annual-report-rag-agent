@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "annual-report-agent"
+version = "0.1.0"
+description = "An evaluation-first annual report research agent for Chinese financial documents."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Project Owner" }]
+dependencies = [
+  "numpy>=1.26,<3",
+  "python-dotenv>=1.0,<2",
+  "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+models = [
+  "sentence-transformers>=5.0,<6",
+  "transformers>=4.51,<6",
+]
+api = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.34,<1",
+  "httpx>=0.28,<1",
+]
+documents = [
+  "pypdf>=5.4,<7",
+]
+ui = [
+  "streamlit>=1.42,<2",
+]
+dev = [
+  "pytest>=8.3,<10",
+  "ruff>=0.9,<1",
+]
+
+[project.scripts]
+annual-report-check-env = "annual_report_agent.environment:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

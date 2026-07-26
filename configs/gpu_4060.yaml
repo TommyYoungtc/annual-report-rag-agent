@@ -1,0 +1,40 @@
+hardware:
+  expected_gpu: NVIDIA GeForce RTX 4060 Laptop GPU
+  expected_vram_mb: 8188
+
+runtime:
+  sequential_model_loading: true
+  empty_cuda_cache_between_stages: true
+
+embedding:
+  model: Qwen/Qwen3-Embedding-0.6B
+  device: cuda
+  dtype: float16
+  batch_size: 4
+  max_length: 768
+  query_instruction: "Given a Chinese annual report question, retrieve passages that directly support the answer."
+
+retrieval:
+  metadata_filter: true
+  query_expansion: true
+  candidate_k: 30
+  return_top_k: 10
+  bm25_weight: 10.0
+  embedding_cache: cache/embeddings/pypdf_qwen3_0.6b_768.npz
+  note: "bm25_weight is calibrated on eval v1; tune on a separate dev split before final reporting"
+
+reranker:
+  model: Qwen/Qwen3-Reranker-0.6B
+  device: cuda
+  dtype: float16
+  batch_size: 1
+  max_length: 1024
+  retrieve_top_k: 20
+  return_top_k: 5
+
+training:
+  max_length: 512
+  per_device_batch_size: 8
+  gradient_accumulation_steps: 4
+  fp16: true
+  epochs: 2

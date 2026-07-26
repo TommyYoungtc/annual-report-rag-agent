@@ -1,0 +1,29 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
+
+# Local data and model artifacts
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/manifest.jsonl
+data/parsed/*
+!data/parsed/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+models/
+cache/
+outputs/*
+!outputs/.gitkeep
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

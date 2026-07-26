@@ -1,0 +1,4 @@
+{"query_id": "q001", "query": "示例科技2024年的营业收入是多少？", "relevant_chunk_ids": ["demo-tech-2024:0000"], "question_type": "single_fact"}
+{"query_id": "q002", "query": "示例科技2024年的研发投入是多少？", "relevant_chunk_ids": ["demo-tech-2024:0001"], "question_type": "single_fact"}
+{"query_id": "q003", "query": "示例科技2023年的经营活动现金流量净额是多少？", "relevant_chunk_ids": ["demo-tech-2023:0002"], "question_type": "single_fact"}
+{"query_id": "q004", "query": "示例科技2023年和2024年的研发投入分别是多少？", "relevant_chunk_ids": ["demo-tech-2023:0001", "demo-tech-2024:0001"], "question_type": "cross_year"}
