@@ -99,6 +99,19 @@ python scripts/run_dense_evaluation.py `
 | E201 | MinerU | BM25 | 无 | 真实开发集 | 待运行 |
 | E202 | MinerU | Hybrid | Reranker | 真实开发集 | 待运行 |
 
+## D200：Eval v2 数据冻结（2026-07-27）
+
+- Dev：60题，用于后续调参；
+- Test：30题，已冻结，本阶段不运行指标；
+- No-answer：15题，已冻结，等待拒答链路；
+- 总计105题，其中90题有直接证据；
+- 题型覆盖42道财务单事实、18道研发、12道员工、6道分红、12道跨年和15道无答案；
+- 自动检查105个唯一ID/问题文本、相关Chunk、答案数字、证据页码和冻结哈希；
+- 完整规范和哈希见 `docs/EVAL_SET_V2.md` 与 `data/eval/eval_v2_manifest.json`。
+
+纪律：在 Agent、分块和提示词开发完成前，不读取 Test 指标。当前 E101–E104 的数字
+仍来自历史24题开发集，不与 Eval v2 Test 混报。
+
 ### E104：Qwen3-Reranker-0.6B 重排消融（2026-07-27）
 
 - 已实现与 Qwen 官方模板一致的原生 Transformers yes/no-logit scorer；

@@ -18,7 +18,7 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - 顺序卸载 Embedding 后再加载 Qwen3 原生 yes/no-logit scorer 的 8GB 显存安全重排链路；
 - Recall@K、MRR、nDCG@K 评测；
 - 6份真实年报的数据清单与断点安全下载脚本；
-- 24题真实年报检索评测集；
+- 60题开发集、30题冻结测试集和15题无答案集；
 - 可离线运行的合成年报样例；
 - 单元测试和第一周任务清单。
 
@@ -132,6 +132,17 @@ python scripts/run_reranker_evaluation.py `
 提升到 0.5972，MRR 从 0.7569 提升到 0.7806；P95 重排延迟约 1.57 秒，
 峰值分配显存约 1.74GB。该数字来自 24 题开发集，只用于配置选择。
 
+构建并验证正式 Eval v2：
+
+```powershell
+python scripts/build_eval_v2.py
+python scripts/validate_eval_v2.py
+```
+
+Eval v2 共105题：60题 Dev、30题冻结 Test、15题 No-answer。开发阶段只允许
+使用 Dev 调参；Test 和 No-answer 的 SHA-256 记录在
+`data/eval/eval_v2_manifest.json`，详见 `docs/EVAL_SET_V2.md`。
+
 或者安装为可编辑包：
 
 ```powershell
@@ -212,4 +223,5 @@ annual-report-agent/
 
 查看 [PROJECT_PLAN.md](PROJECT_PLAN.md)、[docs/WEEK1_CHECKLIST.md](docs/WEEK1_CHECKLIST.md)、
 [docs/EVAL_SET_V1.md](docs/EVAL_SET_V1.md) 和
+[docs/EVAL_SET_V2.md](docs/EVAL_SET_V2.md)、
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。

@@ -1,0 +1,26 @@
+{
+  "dataset_id": "annual-report-eval-v2",
+  "created_at": "2026-07-27",
+  "total_questions": 105,
+  "answerable_questions": 90,
+  "files": {
+    "dev": {
+      "path": "data/eval/annual_report_dev_v2.jsonl",
+      "count": 60,
+      "frozen": false,
+      "sha256": "6d270400e0a21399d4e8f6ab299ec403de879e9e9b7816bb56262cc2999fe41f"
+    },
+    "test": {
+      "path": "data/eval/annual_report_test_v2.jsonl",
+      "count": 30,
+      "frozen": true,
+      "sha256": "0376913b2ec6107c409a472ba6ef589ebda7703b512f39044f1b3dc687815480"
+    },
+    "no_answer": {
+      "path": "data/eval/annual_report_no_answer_v2.jsonl",
+      "count": 15,
+      "frozen": true,
+      "sha256": "4d411e541088f56554e18f86da70815bcfdb460ebf0253f2dcc8dcc5e4a0ddf6"
+    }
+  }
+}
