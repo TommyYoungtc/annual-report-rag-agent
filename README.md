@@ -19,6 +19,7 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - Recall@K、MRR、nDCG@K 评测；
 - 6份真实年报的数据清单与断点安全下载脚本；
 - 60题开发集、30题冻结测试集和15题无答案集；
+- 确定性问题路由、公司/年份范围守卫与结构化拒答；
 - 可离线运行的合成年报样例；
 - 单元测试和第一周任务清单。
 
@@ -143,6 +144,16 @@ Eval v2 共105题：60题 Dev、30题冻结 Test、15题 No-answer。开发阶�
 使用 Dev 调参；Test 和 No-answer 的 SHA-256 记录在
 `data/eval/eval_v2_manifest.json`，详见 `docs/EVAL_SET_V2.md`。
 
+运行受控 Agent 的范围守卫评测（只使用 Dev 与 No-answer，不运行冻结 Test）：
+
+```powershell
+python scripts/evaluate_scope_guard.py
+```
+
+当前范围守卫在60题 Dev上接受率为100%，在15题 No-answer上拒答与原因分类准确率均为
+100%。这些无答案题只覆盖公司/年份越界，不代表系统已经解决“范围内但缺少证据”的语义拒答；
+完整说明见 `docs/AGENT_ROUTING.md`。
+
 或者安装为可编辑包：
 
 ```powershell
@@ -179,6 +190,7 @@ annual-report-agent/
 ├── src/annual_report_agent/
 │   ├── ingestion/           # 解析与分块
 │   ├── retrieval/           # BM25、Dense、RRF、Reranker
+│   ├── agent/               # 问题路由、范围守卫与受控工具调用
 │   └── evaluation/          # 检索与答案评测
 └── tests/
 ```
@@ -224,4 +236,5 @@ annual-report-agent/
 查看 [PROJECT_PLAN.md](PROJECT_PLAN.md)、[docs/WEEK1_CHECKLIST.md](docs/WEEK1_CHECKLIST.md)、
 [docs/EVAL_SET_V1.md](docs/EVAL_SET_V1.md) 和
 [docs/EVAL_SET_V2.md](docs/EVAL_SET_V2.md)、
+[docs/AGENT_ROUTING.md](docs/AGENT_ROUTING.md) 和
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。
