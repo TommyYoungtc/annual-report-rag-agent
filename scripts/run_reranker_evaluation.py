@@ -21,7 +21,7 @@ from annual_report_agent.evaluation import evaluate_retrieval
 from annual_report_agent.io_utils import read_chunks, read_evaluation_queries
 from annual_report_agent.retrieval import (
     BM25Retriever,
-    SentenceTransformerReranker,
+    Qwen3Reranker,
     expand_query_with_section_anchors,
     infer_allowed_document_ids,
     reciprocal_rank_fusion,
@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embedding-max-length", type=int, default=768)
     parser.add_argument("--reranker-max-length", type=int, default=1024)
     parser.add_argument("--candidate-k", type=int, default=30)
-    parser.add_argument("--rerank-candidates", type=int, default=20)
+    parser.add_argument("--rerank-candidates", type=int, default=10)
     parser.add_argument("--top-k", type=int, default=10)
     parser.add_argument("--bm25-weight", type=float, default=10.0)
     parser.add_argument(
@@ -190,7 +190,7 @@ def main() -> None:
 
     torch.cuda.reset_peak_memory_stats()
     reranker_load_started = time.perf_counter()
-    reranker = SentenceTransformerReranker(
+    reranker = Qwen3Reranker(
         args.reranker_model,
         device=args.device,
         batch_size=args.reranker_batch_size,
@@ -227,6 +227,7 @@ def main() -> None:
                     result.chunk.chunk_id for result in candidate_results[: args.top_k]
                 ],
                 "reranked_top_ids": reranked_ids,
+                "reranked_scores": [result.score for result in reranked],
             }
         )
 

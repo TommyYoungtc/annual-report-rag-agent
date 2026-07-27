@@ -30,9 +30,10 @@ reranker:
   batch_size: 1
   max_length: 1024
   retrieve_top_k: 30
-  rerank_candidates: 20
+  rerank_candidates: 10
   return_top_k: 10
   instruction: "Given a Chinese annual report question, judge whether the passage directly contains evidence that answers the question."
+  note: "Top-10 was selected by the E104 development-set latency/quality ablation"
 
 training:
   max_length: 512

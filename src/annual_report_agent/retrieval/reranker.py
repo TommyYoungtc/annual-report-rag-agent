@@ -12,8 +12,15 @@ class PairScorer(Protocol):
     def score(self, query: str, documents: Sequence[str]) -> np.ndarray: ...
 
 
-class SentenceTransformerReranker:
-    """CrossEncoder adapter sized for sequential use on an 8GB RTX 4060."""
+class Qwen3Reranker:
+    """Official yes/no-logit Qwen3 reranker adapted for an 8GB RTX 4060."""
+
+    PREFIX = (
+        "<|im_start|>system\nJudge whether the Document meets the requirements "
+        "based on the Query and the Instruct provided. Note that the answer can only "
+        'be "yes" or "no".<|im_end|>\n<|im_start|>user\n'
+    )
+    SUFFIX = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
 
     def __init__(
         self,
@@ -26,7 +33,7 @@ class SentenceTransformerReranker:
     ) -> None:
         try:
             import torch
-            from sentence_transformers import CrossEncoder
+            from transformers import AutoModelForCausalLM, AutoTokenizer
         except ImportError as error:
             raise RuntimeError(
                 "Reranking requires the 'models' dependencies. "
@@ -35,30 +42,76 @@ class SentenceTransformerReranker:
 
         if device.startswith("cuda") and not torch.cuda.is_available():
             raise RuntimeError("CUDA device requested but PyTorch cannot access CUDA")
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive")
 
-        model_kwargs = {"torch_dtype": torch.float16} if device.startswith("cuda") else {}
-        prompts = {"annual_report": instruction} if instruction else None
-        self.model = CrossEncoder(
-            model_name,
-            device=device,
-            model_kwargs=model_kwargs,
-            max_length=max_length,
-            prompts=prompts,
-            default_prompt_name="annual_report" if instruction else None,
-        )
+        self.torch = torch
+        self.device = device
         self.batch_size = batch_size
+        self.max_length = max_length
+        self.instruction = instruction or (
+            "Given a web search query, retrieve relevant passages that answer the query"
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            padding_side="left",
+        )
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            dtype=torch.float16 if device.startswith("cuda") else torch.float32,
+        ).to(device)
+        self.model.eval()
+        self.false_token_id = self.tokenizer.convert_tokens_to_ids("no")
+        self.true_token_id = self.tokenizer.convert_tokens_to_ids("yes")
+        self.prefix_tokens = self.tokenizer.encode(self.PREFIX, add_special_tokens=False)
+        self.suffix_tokens = self.tokenizer.encode(self.SUFFIX, add_special_tokens=False)
+        if max_length <= len(self.prefix_tokens) + len(self.suffix_tokens):
+            raise ValueError("max_length is too small for the reranker prompt")
+
+    def _format_pair(self, query: str, document: str) -> str:
+        return f"<Instruct>: {self.instruction}\n<Query>: {query}\n<Document>: {document}"
+
+    def _prepare_inputs(self, pairs: Sequence[str]):
+        content_length = self.max_length - len(self.prefix_tokens) - len(self.suffix_tokens)
+        encoded = self.tokenizer(
+            list(pairs),
+            padding=False,
+            truncation="longest_first",
+            return_attention_mask=False,
+            max_length=content_length,
+        )
+        input_ids = [
+            self.prefix_tokens + item + self.suffix_tokens for item in encoded["input_ids"]
+        ]
+        inputs = self.tokenizer.pad(
+            {"input_ids": input_ids},
+            padding=True,
+            return_tensors="pt",
+        )
+        return {key: value.to(self.device) for key, value in inputs.items()}
 
     def score(self, query: str, documents: Sequence[str]) -> np.ndarray:
         if not documents:
             return np.empty(0, dtype=np.float32)
-        pairs = [(query, document) for document in documents]
-        scores = self.model.predict(
-            pairs,
-            batch_size=self.batch_size,
-            convert_to_numpy=True,
-            show_progress_bar=len(pairs) > self.batch_size,
-        )
-        return np.asarray(scores, dtype=np.float32).reshape(-1)
+
+        formatted = [self._format_pair(query, document) for document in documents]
+        scores: list[float] = []
+        with self.torch.inference_mode():
+            for start in range(0, len(formatted), self.batch_size):
+                inputs = self._prepare_inputs(formatted[start : start + self.batch_size])
+                final_logits = self.model(**inputs).logits[:, -1, :]
+                true_logits = final_logits[:, self.true_token_id]
+                false_logits = final_logits[:, self.false_token_id]
+                binary_logits = self.torch.stack([false_logits, true_logits], dim=1)
+                probabilities = self.torch.nn.functional.log_softmax(binary_logits, dim=1)[
+                    :, 1
+                ].exp()
+                scores.extend(probabilities.float().cpu().tolist())
+        return np.asarray(scores, dtype=np.float32)
+
+
+# Backward-compatible name retained for the first engineering milestone.
+SentenceTransformerReranker = Qwen3Reranker
 
 
 def rerank_results(

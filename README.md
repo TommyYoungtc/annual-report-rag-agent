@@ -15,7 +15,7 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - Sentence Transformers/Qwen3 Dense Retrieval 适配器；
 - 公司/年份元数据过滤与年报章节查询扩展；
 - 可复用的文档向量缓存与加权 RRF；
-- 顺序卸载 Embedding 后再加载 CrossEncoder 的 8GB 显存安全重排链路；
+- 顺序卸载 Embedding 后再加载 Qwen3 原生 yes/no-logit scorer 的 8GB 显存安全重排链路；
 - Recall@K、MRR、nDCG@K 评测；
 - 6份真实年报的数据清单与断点安全下载脚本；
 - 24题真实年报检索评测集；
@@ -121,12 +121,16 @@ python scripts/run_reranker_evaluation.py `
   --embedding-model .\cache\models\Qwen3-Embedding-0.6B-modelscope `
   --reranker-model .\cache\models\Qwen3-Reranker-0.6B-modelscope `
   --embedding-cache .\cache\embeddings\pypdf_qwen3_0.6b_768.npz `
-  --candidate-k 30 --rerank-candidates 20 --top-k 10 `
+  --candidate-k 30 --rerank-candidates 10 --top-k 10 `
   --reranker-batch-size 1 --reranker-max-length 1024
 ```
 
 脚本会先生成全部 Hybrid 候选，然后显式卸载 Embedding 模型并清理 CUDA
 缓存，最后加载 Reranker，避免两套 0.6B 模型同时占用显存。
+
+当前开发集上，Top-10 重排保持 Recall@5/10 为 1.00，Recall@1 从 0.5556
+提升到 0.5972，MRR 从 0.7569 提升到 0.7806；P95 重排延迟约 1.57 秒，
+峰值分配显存约 1.74GB。该数字来自 24 题开发集，只用于配置选择。
 
 或者安装为可编辑包：
 
