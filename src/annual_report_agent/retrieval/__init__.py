@@ -4,10 +4,13 @@ from .query_filters import (
     expand_query_with_section_anchors,
     infer_allowed_document_ids,
 )
+from .reranker import SentenceTransformerReranker, rerank_results
 
 __all__ = [
     "BM25Retriever",
+    "SentenceTransformerReranker",
     "expand_query_with_section_anchors",
     "infer_allowed_document_ids",
     "reciprocal_rank_fusion",
+    "rerank_results",
 ]

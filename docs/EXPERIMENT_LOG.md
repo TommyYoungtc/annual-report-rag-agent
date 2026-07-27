@@ -99,6 +99,15 @@ python scripts/run_dense_evaluation.py `
 | E201 | MinerU | BM25 | 无 | 真实开发集 | 待运行 |
 | E202 | MinerU | Hybrid | Reranker | 真实开发集 | 待运行 |
 
+### E104 工程准备状态（2026-07-27）
+
+- 已实现 `SentenceTransformerReranker` CrossEncoder 适配器；
+- 已实现 Top-30 召回、Top-20 重排、Top-10 指标对照；
+- 已实现 Embedding 与 Reranker 串行卸载/加载；
+- 已记录两阶段峰值显存、模型卸载后显存、加载时间和 P50/P95；
+- 已增加假模型重排、分数数量校验和边界条件测试；
+- 真实权重下载尚未获准，因此 E104 暂不填写实验数字。
+
 ## 每次实验必须记录
 
 - Git提交或代码版本；

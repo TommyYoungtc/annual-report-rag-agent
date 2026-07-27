@@ -29,8 +29,10 @@ reranker:
   dtype: float16
   batch_size: 1
   max_length: 1024
-  retrieve_top_k: 20
-  return_top_k: 5
+  retrieve_top_k: 30
+  rerank_candidates: 20
+  return_top_k: 10
+  instruction: "Given a Chinese annual report question, judge whether the passage directly contains evidence that answers the question."
 
 training:
   max_length: 512
