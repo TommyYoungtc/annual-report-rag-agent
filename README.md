@@ -22,6 +22,7 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - 确定性问题路由、公司/年份范围守卫与结构化拒答；
 - Hybrid + Reranker证据回答、Decimal计算和Chunk/页码/原文引用；
 - 18题范围内困难无答案集与查询约束—证据蕴含检查；
+- FastAPI接口、本地Web演示与8GB显存安全的串行模型运行时；
 - 可离线运行的合成年报样例；
 - 单元测试和第一周任务清单。
 
@@ -183,6 +184,17 @@ python scripts/run_hard_no_answer_evaluation.py
 18题困难集中，不加语义约束时系统会18题全部误答；查询约束—证据蕴含检查可拒绝18/18且不影响
 60题Dev。单一Reranker阈值无法达到同样权衡，详见 `docs/HARD_NO_ANSWER.md`。
 
+启动本地演示：
+
+```powershell
+python -m pip install -e ".[api]"
+python scripts/run_demo.py
+```
+
+浏览器打开 `http://127.0.0.1:8000`。页面会展示路由、答案、计算过程、引用页码、证据原文、
+拒答原因和请求耗时。服务保持Embedding/Reranker串行加载以适配RTX 4060 8GB，详见
+`docs/LOCAL_DEMO.md`。
+
 或者安装为可编辑包：
 
 ```powershell
@@ -268,4 +280,5 @@ annual-report-agent/
 [docs/AGENT_ROUTING.md](docs/AGENT_ROUTING.md) 和
 [docs/ANSWER_PIPELINE.md](docs/ANSWER_PIPELINE.md)、
 [docs/HARD_NO_ANSWER.md](docs/HARD_NO_ANSWER.md)、
+[docs/LOCAL_DEMO.md](docs/LOCAL_DEMO.md)、
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。

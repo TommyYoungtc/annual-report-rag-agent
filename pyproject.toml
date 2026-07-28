@@ -40,6 +40,9 @@ dev = [
 [project.scripts]
 annual-report-check-env = "annual_report_agent.environment:main"
 
+[tool.setuptools.package-data]
+annual_report_agent = ["web/*.html"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

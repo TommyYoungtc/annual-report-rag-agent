@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="本地年报证据研究 Agent：检索、计算、引用与拒答。">
+  <title>年报证据研究 Agent</title>
+  <style>
+    :root {
+      --ink: #17221f;
+      --muted: #68736f;
+      --paper: #f6f2e9;
+      --card: rgba(255, 254, 249, .88);
+      --line: #d8d5c9;
+      --teal: #0f766e;
+      --teal-dark: #0b4f4a;
+      --amber: #b45309;
+      --red: #a33a2b;
+      --shadow: 0 24px 70px rgba(41, 54, 49, .12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(15, 118, 110, .14), transparent 27rem),
+        linear-gradient(120deg, transparent 0 74%, rgba(180, 83, 9, .07) 74% 75%, transparent 75%),
+        var(--paper);
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .28;
+      background-image: linear-gradient(rgba(20, 60, 55, .08) 1px, transparent 1px);
+      background-size: 100% 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+    .shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 34px 0 64px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+    .brand { display: flex; align-items: center; gap: 13px; font-weight: 750; letter-spacing: .04em; }
+    .brand-mark {
+      display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px;
+      color: white; background: var(--teal); font-family: Georgia, serif; font-size: 21px;
+      box-shadow: 5px 5px 0 rgba(15, 118, 110, .16);
+    }
+    .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 5px #dcfce7; }
+    .hero { padding: 70px 0 34px; max-width: 820px; }
+    .eyebrow { color: var(--teal); font-weight: 700; font-size: 13px; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 14px 0 16px; max-width: 760px; font: 600 clamp(38px, 6vw, 68px)/1.05 Georgia, "Songti SC", serif; letter-spacing: -.035em; }
+    .hero p { max-width: 720px; color: var(--muted); line-height: 1.85; font-size: 16px; }
+    .scope { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .chip { padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.5); color: #495650; font-size: 12px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, .75fr); gap: 18px; align-items: start; }
+    .panel { border: 1px solid var(--line); border-radius: 22px; background: var(--card); box-shadow: var(--shadow); backdrop-filter: blur(14px); }
+    .query-panel { padding: 26px; }
+    label { display: block; margin-bottom: 12px; font-weight: 700; }
+    textarea {
+      width: 100%; min-height: 118px; resize: vertical; padding: 17px 18px; border: 1px solid #c8cec8;
+      border-radius: 15px; outline: none; color: var(--ink); background: #fffef9; font: inherit; line-height: 1.65;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(15, 118, 110, .11); }
+    .actions { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 15px; }
+    .hint { color: var(--muted); font-size: 12px; line-height: 1.55; }
+    button { font: inherit; cursor: pointer; }
+    .submit {
+      border: 0; border-radius: 12px; padding: 12px 20px; color: white; background: var(--teal);
+      font-weight: 700; box-shadow: 0 8px 20px rgba(15, 118, 110, .22);
+    }
+    .submit:hover { background: var(--teal-dark); }
+    .submit:disabled { cursor: wait; opacity: .65; }
+    .examples { padding: 22px; }
+    .examples h2, .result h2 { margin: 0 0 15px; font-size: 14px; letter-spacing: .03em; }
+    .example {
+      width: 100%; margin-top: 9px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 11px;
+      color: #3b4742; background: transparent; text-align: left; font-size: 12px; line-height: 1.55;
+    }
+    .example:hover { border-color: var(--teal); background: rgba(15, 118, 110, .05); }
+    .result { display: none; margin-top: 18px; padding: 26px; }
+    .result.visible { display: block; animation: rise .3s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+    .result-head { display: flex; justify-content: space-between; gap: 18px; align-items: center; }
+    .badge { border-radius: 999px; padding: 6px 10px; color: var(--teal-dark); background: #ccfbf1; font-size: 12px; font-weight: 700; }
+    .badge.refused { color: var(--red); background: #fee2e2; }
+    .answer { margin: 18px 0; font: 600 clamp(22px, 4vw, 34px)/1.45 Georgia, "Songti SC", serif; overflow-wrap: anywhere; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .meta span { padding: 6px 9px; background: #edf1ec; border-radius: 8px; color: #56625d; font-size: 11px; }
+    .calculation { padding: 14px 15px; border-left: 3px solid var(--amber); background: #fff7ed; color: #7c4210; line-height: 1.65; font-size: 13px; }
+    .citations { margin-top: 22px; }
+    .citation { margin-top: 10px; padding: 15px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.55); }
+    .citation-top { display: flex; justify-content: space-between; gap: 12px; color: var(--teal-dark); font-size: 12px; font-weight: 700; }
+    .quote { margin-top: 9px; color: #4f5b56; font-size: 12px; line-height: 1.7; }
+    .error { color: var(--red); }
+    footer { margin-top: 28px; color: #7a837f; font-size: 11px; line-height: 1.7; text-align: center; }
+    @media (max-width: 780px) {
+      .workspace { grid-template-columns: 1fr; }
+      .hero { padding-top: 48px; }
+      .actions { align-items: flex-start; flex-direction: column; }
+      .submit { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark">A</span><span>AnnualScope</span></div>
+      <div class="status"><span class="dot"></span><span id="health">正在连接本地服务</span></div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Evidence-first annual report agent</div>
+      <h1>每一个数字，<br>都回到年报原页。</h1>
+      <p>面向上市公司年报的本地研究助手。系统先判断问题范围，再运行混合检索与重排；只有证据完整时才回答，并同时给出计算过程、Chunk 与 PDF 页码。</p>
+      <div class="scope" id="scope"><span class="chip">正在读取语料范围…</span></div>
+    </section>
+
+    <section class="workspace">
+      <div>
+        <div class="panel query-panel">
+          <label for="query">输入年报问题</label>
+          <textarea id="query" maxlength="500" placeholder="例如：宁德时代2024年和2025年的归母净利润分别是多少？"></textarea>
+          <div class="actions">
+            <div class="hint">首次有效查询需要切换本地模型，通常会比后续步骤更慢。<br>越界问题会在加载 GPU 模型前直接拒答。</div>
+            <button class="submit" id="submit">检索并核验</button>
+          </div>
+        </div>
+        <div class="panel result" id="result" aria-live="polite"></div>
+      </div>
+
+      <aside class="panel examples">
+        <h2>试试这些问题</h2>
+        <button class="example">宁德时代2024年和2025年的归属于上市公司股东的净利润分别是多少？</button>
+        <button class="example">比亚迪2024到2025年营业收入增长了多少？</button>
+        <button class="example">科大讯飞2025年的研发投入占营业收入比例是多少？</button>
+        <button class="example">宁德时代2025年的海外研发投入金额是多少？</button>
+        <button class="example">贵州茅台2025年的营业收入是多少？</button>
+      </aside>
+    </section>
+
+    <footer>本地运行 · 语料覆盖范围由当前年报索引自动生成 · 回答不构成投资建议</footer>
+  </main>
+
+  <script>
+    const query = document.getElementById("query");
+    const submit = document.getElementById("submit");
+    const result = document.getElementById("result");
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    })[char]);
+
+    document.querySelectorAll(".example").forEach(button => {
+      button.addEventListener("click", () => {
+        query.value = button.textContent.trim();
+        query.focus();
+      });
+    });
+
+    async function loadScope() {
+      try {
+        const response = await fetch("/api/scope");
+        const data = await response.json();
+        document.getElementById("health").textContent = "本地服务已就绪";
+        document.getElementById("scope").innerHTML = [
+          ...data.companies.map(item => `<span class="chip">${escapeHtml(item)}</span>`),
+          `<span class="chip">${escapeHtml(data.years.join("—"))} 年</span>`,
+          `<span class="chip">${data.supported_fields.length} 类字段</span>`
+        ].join("");
+      } catch {
+        document.getElementById("health").textContent = "本地服务未连接";
+      }
+    }
+
+    function render(data) {
+      const refused = data.status === "refused";
+      const timing = data.timing_ms?.total ? `${(data.timing_ms.total / 1000).toFixed(2)} 秒` : "规则直达";
+      const citations = (data.citations || []).map(item => `
+        <div class="citation">
+          <div class="citation-top">
+            <span>${escapeHtml(item.company)} · ${escapeHtml(item.year)} 年</span>
+            <span>PDF 第 ${escapeHtml(item.page ?? "—")} 页 · ${escapeHtml(item.chunk_id)}</span>
+          </div>
+          <div class="quote">${escapeHtml(item.quote)}</div>
+        </div>`).join("");
+      result.className = "panel result visible";
+      result.innerHTML = `
+        <div class="result-head">
+          <h2>${refused ? "证据不足，已拒答" : "核验后的回答"}</h2>
+          <span class="badge ${refused ? "refused" : ""}">${refused ? "REFUSED" : "ANSWERED"}</span>
+        </div>
+        <div class="answer">${escapeHtml(data.answer || "没有可展示的答案")}</div>
+        <div class="meta">
+          <span>${escapeHtml(data.route?.task_type || "unknown")}</span>
+          <span>${escapeHtml((data.route?.companies || []).join("、") || "全语料")}</span>
+          <span>${escapeHtml((data.route?.years || []).join("、") || "不限年份")}</span>
+          <span>${data.gpu_used ? "GPU 检索与重排" : "CPU 范围守卫"}</span>
+          <span>${timing}</span>
+        </div>
+        ${data.calculation ? `<div class="calculation">${escapeHtml(data.calculation)}</div>` : ""}
+        ${citations ? `<div class="citations"><h2>证据引用</h2>${citations}</div>` : ""}
+      `;
+    }
+
+    async function ask() {
+      const value = query.value.trim();
+      if (value.length < 2) {
+        query.focus();
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = "正在检索与核验…";
+      result.className = "panel result visible";
+      result.innerHTML = `<h2>受控流水线运行中</h2><div class="answer">正在切换模型并检查证据…</div>`;
+      try {
+        const response = await fetch("/api/query", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({query: value})
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "请求失败");
+        render(data);
+      } catch (error) {
+        result.innerHTML = `<h2 class="error">本地服务返回错误</h2><div class="answer">${escapeHtml(error.message)}</div>`;
+      } finally {
+        submit.disabled = false;
+        submit.textContent = "检索并核验";
+      }
+    }
+
+    submit.addEventListener("click", ask);
+    query.addEventListener("keydown", event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") ask();
+    });
+    loadScope();
+  </script>
+</body>
+</html>
