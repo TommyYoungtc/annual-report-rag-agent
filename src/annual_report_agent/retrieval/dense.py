@@ -25,6 +25,7 @@ class SentenceTransformerEncoder:
         batch_size: int = 4,
         max_length: int = 768,
         query_instruction: str | None = None,
+        query_template: str = "Instruct: {instruction}\nQuery: {query}",
     ) -> None:
         try:
             import torch
@@ -47,6 +48,7 @@ class SentenceTransformerEncoder:
         self.model.max_seq_length = max_length
         self.batch_size = batch_size
         self.query_instruction = query_instruction
+        self.query_template = query_template
 
     def _encode(self, texts: Sequence[str]) -> np.ndarray:
         return np.asarray(
@@ -65,7 +67,10 @@ class SentenceTransformerEncoder:
 
     def encode_queries(self, texts: Sequence[str]) -> np.ndarray:
         if self.query_instruction:
-            texts = [f"Instruct: {self.query_instruction}\nQuery: {text}" for text in texts]
+            texts = [
+                self.query_template.format(instruction=self.query_instruction, query=text)
+                for text in texts
+            ]
         return self._encode(texts)
 
 

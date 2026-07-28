@@ -36,6 +36,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--max-length", type=int, default=768)
+    parser.add_argument(
+        "--query-instruction",
+        default=(
+            "Given a Chinese annual report question, retrieve passages "
+            "that directly support the answer."
+        ),
+        help="Prefix applied to queries only; pass an empty string to disable",
+    )
+    parser.add_argument(
+        "--query-template",
+        default="Instruct: {instruction}\nQuery: {query}",
+        help="Format containing {instruction} and {query}; BGE uses {instruction}{query}",
+    )
     parser.add_argument("--top-k", type=int, default=10)
     parser.add_argument("--candidate-k", type=int, default=30)
     parser.add_argument(
@@ -110,10 +123,8 @@ def main() -> None:
         device=args.device,
         batch_size=args.batch_size,
         max_length=args.max_length,
-        query_instruction=(
-            "Given a Chinese annual report question, retrieve passages "
-            "that directly support the answer."
-        ),
+        query_instruction=args.query_instruction or None,
+        query_template=args.query_template,
     )
 
     import torch
@@ -239,6 +250,8 @@ def main() -> None:
             "gpu": gpu,
             "batch_size": args.batch_size,
             "max_length": args.max_length,
+            "query_instruction": args.query_instruction or None,
+            "query_template": args.query_template,
             "metadata_filter": args.metadata_filter,
             "query_expansion": args.query_expansion,
             "bm25_weight": args.bm25_weight,

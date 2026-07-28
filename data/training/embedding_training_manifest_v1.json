@@ -1,0 +1,28 @@
+{
+  "dataset_id": "annual-report-embedding-training-v1",
+  "source_eval": "C:\\Users\\yangt\\Downloads\\秋招简历\\所有项目\\大模型\\data\\eval\\annual_report_dev_v2.jsonl",
+  "validation_rule": "every fifth query in source order",
+  "train_query_count": 48,
+  "validation_query_count": 12,
+  "triples_count": 1152,
+  "negatives_per_query": 24,
+  "train_and_validation_disjoint": true,
+  "files": {
+    "train_queries": {
+      "path": "data\\training\\embedding_train_queries_v1.jsonl",
+      "sha256": "7974c237c77750996f3749559ddcef07c14d258bfc9d6e4f71626d45c705050e"
+    },
+    "validation_queries": {
+      "path": "data\\training\\embedding_validation_queries_v1.jsonl",
+      "sha256": "352bd90bfe8e532583a4c24754d5d5e3bae93ad66f972eeb8249101d7e824f15"
+    },
+    "triples": {
+      "path": "data\\training\\embedding_hard_negatives_v1.jsonl",
+      "sha256": "c16555d5780cf42b9a3c5bfa4b645489ec2c97676a613b729fed3eb8de95faca"
+    }
+  },
+  "negative_sources": {
+    "qwen3_reranker_top10": 383,
+    "bm25_top80": 769
+  }
+}
