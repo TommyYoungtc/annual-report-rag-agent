@@ -1,0 +1,72 @@
+{
+  "configuration_id": "annual-report-agent-final-v1",
+  "status": "sealed",
+  "configuration_lock": {
+    "path": "configs\\final_v1.lock.json",
+    "sha256": "399f742c2cca25d04026e1a83ff2d1dbec25e0ddbedc56460146a06a6fccafb4"
+  },
+  "frozen_test_result": {
+    "path": "outputs\\frozen_test_final_v1.json",
+    "sha256": "47b37dda84fa5dcaf8d06b4d76ea0f7b2ebc0ef5554aed4c987eaa281e52260e",
+    "successful_runs": 1
+  },
+  "metrics": {
+    "frozen_test_questions": 30,
+    "end_to_end_exact_answer_accuracy": 0.2,
+    "all_gold_evidence_recall_at_10": 0.9666666666666667,
+    "citation_chunk_precision_on_answered": 1.0,
+    "oracle_exact_answer_accuracy": 0.2
+  },
+  "analysis": {
+    "status_counts": {
+      "refused": 24,
+      "answered": 6
+    },
+    "refusal_reasons": {
+      "unsupported_fact": 24
+    },
+    "test_only_fact_keys": [
+      "basic_eps",
+      "cross_year_revenue",
+      "cross_year_rnd_amount",
+      "rnd_staff",
+      "roe",
+      "total_assets"
+    ],
+    "exact_by_fact_key": {
+      "basic_eps": {
+        "correct": 0,
+        "total": 6
+      },
+      "roe": {
+        "correct": 0,
+        "total": 6
+      },
+      "total_assets": {
+        "correct": 0,
+        "total": 6
+      },
+      "rnd_staff": {
+        "correct": 0,
+        "total": 6
+      },
+      "cross_year_revenue": {
+        "correct": 3,
+        "total": 3
+      },
+      "cross_year_rnd_amount": {
+        "correct": 3,
+        "total": 3
+      }
+    },
+    "retrieval_miss_query_ids": [
+      "test-019"
+    ],
+    "root_cause": "The controlled answer extractor did not support four frozen-test-only fact schemas; retrieval remained strong."
+  },
+  "policy": {
+    "test_modified_after_run": false,
+    "configuration_modified_after_lock": false,
+    "test_rerun_for_tuning": false
+  }
+}

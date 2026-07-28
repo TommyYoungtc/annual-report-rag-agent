@@ -1,0 +1,38 @@
+configuration_id: annual-report-agent-final-v1
+status: ready_to_lock
+
+models:
+  embedding: cache/models/bge-small-zh-v1.5-annual-report-v1
+  reranker: cache/models/Qwen3-Reranker-0.6B-modelscope
+
+embedding:
+  max_length: 384
+  batch_size: 32
+  query_instruction: "为这个句子生成表示以用于检索相关文章："
+  query_template: "{instruction}{query}"
+
+retrieval:
+  candidate_k: 30
+  rerank_candidates: 10
+  top_k: 10
+  bm25_weight: 10.0
+
+answering:
+  minimum_reranker_score: 0.0
+  enforce_query_constraints: true
+
+artifacts:
+  corpus: data/processed/pypdf_corpus.jsonl
+  embedding_model: cache/models/bge-small-zh-v1.5-annual-report-v1/model.safetensors
+  embedding_cache: cache/embeddings/pypdf_bge_small_annual_report_v1_384.npz
+  reranker_model: cache/models/Qwen3-Reranker-0.6B-modelscope/model.safetensors
+  dev_set: data/eval/annual_report_dev_v2.jsonl
+  hard_no_answer_set: data/eval/annual_report_hard_no_answer_dev_v1.jsonl
+  frozen_test: data/eval/annual_report_test_v2.jsonl
+  dev_result: outputs/agent_dev_metrics_bge_final_v1.json
+  hard_no_answer_result: outputs/hard_no_answer_metrics_bge_final_v1.json
+  runtime_source: src/annual_report_agent/runtime.py
+  dense_source: src/annual_report_agent/retrieval/dense.py
+  reranker_source: src/annual_report_agent/retrieval/reranker.py
+  answerer_source: src/annual_report_agent/agent/answerer.py
+  evaluation_source: scripts/run_agent_evaluation.py

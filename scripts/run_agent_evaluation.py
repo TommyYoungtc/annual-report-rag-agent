@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import json
 import os
 import platform
@@ -36,16 +37,24 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--embedding-model",
-        default=r".\cache\models\Qwen3-Embedding-0.6B-modelscope",
+        default=r".\cache\models\bge-small-zh-v1.5-annual-report-v1",
     )
     parser.add_argument(
         "--reranker-model",
         default=r".\cache\models\Qwen3-Reranker-0.6B-modelscope",
     )
     parser.add_argument("--device", default="cuda")
-    parser.add_argument("--embedding-batch-size", type=int, default=4)
+    parser.add_argument("--embedding-batch-size", type=int, default=32)
     parser.add_argument("--reranker-batch-size", type=int, default=1)
-    parser.add_argument("--embedding-max-length", type=int, default=768)
+    parser.add_argument("--embedding-max-length", type=int, default=384)
+    parser.add_argument(
+        "--embedding-query-instruction",
+        default="为这个句子生成表示以用于检索相关文章：",
+    )
+    parser.add_argument(
+        "--embedding-query-template",
+        default="{instruction}{query}",
+    )
     parser.add_argument("--reranker-max-length", type=int, default=1024)
     parser.add_argument("--candidate-k", type=int, default=30)
     parser.add_argument("--rerank-candidates", type=int, default=10)
@@ -54,12 +63,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--minimum-reranker-score", type=float, default=0.0)
     parser.add_argument(
         "--embedding-cache",
-        default="cache/embeddings/pypdf_qwen3_0.6b_768.npz",
+        default="cache/embeddings/pypdf_bge_small_annual_report_v1_384.npz",
     )
     parser.add_argument("--corpus", default="data/processed/pypdf_corpus.jsonl")
     parser.add_argument("--dev", default="data/eval/annual_report_dev_v2.jsonl")
     parser.add_argument("--no-answer", default="data/eval/annual_report_no_answer_v2.jsonl")
     parser.add_argument("--output", default="outputs/agent_dev_metrics_v2.json")
+    parser.add_argument(
+        "--evaluation-split",
+        choices=("dev", "frozen_test"),
+        default="dev",
+    )
+    parser.add_argument(
+        "--configuration-lock",
+        default="configs/final_v1.lock.json",
+    )
     parser.add_argument("--oracle-only", action="store_true")
     return parser.parse_args()
 
@@ -72,6 +90,37 @@ def project_path(value: str) -> Path:
 def read_jsonl(path: Path) -> list[dict]:
     with path.open("r", encoding="utf-8") as handle:
         return [json.loads(line) for line in handle if line.strip()]
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def validate_frozen_configuration(
+    lock_path: Path,
+    test_path: Path,
+    output_path: Path,
+) -> None:
+    if output_path.exists():
+        raise FileExistsError(
+            f"frozen-test output already exists; refusing a second run: {output_path}"
+        )
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    if lock.get("status") != "locked":
+        raise ValueError("final configuration is not locked")
+    for name, artifact in lock["artifacts"].items():
+        path = project_path(artifact["path"])
+        if not path.is_file():
+            raise FileNotFoundError(f"locked artifact is missing: {name}: {path}")
+        if sha256(path) != artifact["sha256"]:
+            raise ValueError(f"locked artifact changed: {name}: {path}")
+    frozen = lock["artifacts"]["frozen_test"]
+    if project_path(frozen["path"]).resolve() != test_path.resolve():
+        raise ValueError("--dev does not point to the locked frozen test set")
 
 
 def ratio(numerator: int, denominator: int) -> float:
@@ -149,11 +198,19 @@ def main() -> None:
 
     corpus_path = project_path(args.corpus)
     dev_path = project_path(args.dev)
-    no_answer_path = project_path(args.no_answer)
+    no_answer_path = project_path(args.no_answer) if args.no_answer else None
     output_path = project_path(args.output)
+    if args.evaluation_split == "frozen_test":
+        if args.oracle_only:
+            raise ValueError("--oracle-only is not valid for the frozen test run")
+        validate_frozen_configuration(
+            project_path(args.configuration_lock),
+            dev_path,
+            output_path,
+        )
     chunks = read_chunks(corpus_path)
     dev_rows = read_jsonl(dev_path)
-    no_answer_rows = read_jsonl(no_answer_path)
+    no_answer_rows = read_jsonl(no_answer_path) if no_answer_path else []
     scope = CorpusScope.from_chunks(chunks)
     chunk_by_id = {chunk.chunk_id: chunk for chunk in chunks}
     oracle = oracle_extraction(dev_rows, chunk_by_id, scope)
@@ -163,12 +220,13 @@ def main() -> None:
         "dataset": {
             "corpus": str(corpus_path),
             "dev": str(dev_path),
-            "no_answer": str(no_answer_path),
+            "no_answer": str(no_answer_path) if no_answer_path else None,
             "num_chunks": len(chunks),
             "num_dev_queries": len(dev_rows),
             "num_no_answer_queries": len(no_answer_rows),
         },
-        "frozen_test_evaluated": False,
+        "evaluation_split": args.evaluation_split,
+        "frozen_test_evaluated": args.evaluation_split == "frozen_test",
         "oracle_extraction": oracle,
     }
     if args.oracle_only:
@@ -189,7 +247,12 @@ def main() -> None:
         cached_max_length = int(cache["max_length"].item())
         if cached_ids != [chunk.chunk_id for chunk in chunks]:
             raise ValueError("embedding cache does not match corpus chunk IDs")
-        if cached_model != args.embedding_model or cached_max_length != args.embedding_max_length:
+        cached_model_path = project_path(cached_model)
+        requested_model_path = project_path(args.embedding_model)
+        if (
+            cached_model_path.resolve() != requested_model_path.resolve()
+            or cached_max_length != args.embedding_max_length
+        ):
             raise ValueError("embedding cache does not match embedding configuration")
         cached_embeddings = np.asarray(cache["embeddings"], dtype=np.float32)
 
@@ -203,10 +266,8 @@ def main() -> None:
         device=args.device,
         batch_size=args.embedding_batch_size,
         max_length=args.embedding_max_length,
-        query_instruction=(
-            "Given a Chinese annual report question, retrieve passages "
-            "that directly support the answer."
-        ),
+        query_instruction=args.embedding_query_instruction or None,
+        query_template=args.embedding_query_template,
     )
     dense = DenseRetriever(chunks, encoder, document_embeddings=cached_embeddings)
     bm25 = BM25Retriever(chunks)
@@ -325,6 +386,8 @@ def main() -> None:
             "bm25_weight": args.bm25_weight,
             "minimum_reranker_score": args.minimum_reranker_score,
             "embedding_max_length": args.embedding_max_length,
+            "embedding_query_instruction": args.embedding_query_instruction,
+            "embedding_query_template": args.embedding_query_template,
             "reranker_max_length": args.reranker_max_length,
         },
         "runtime": {
@@ -358,7 +421,7 @@ def main() -> None:
     print(json.dumps(result["timing"], ensure_ascii=False, indent=2))
     print(json.dumps(result["metrics"], ensure_ascii=False, indent=2))
     print(f"oracle_exact_answer_accuracy={oracle['exact_answer_accuracy']:.4f}")
-    print("frozen_test_evaluated=False")
+    print(f"frozen_test_evaluated={result['frozen_test_evaluated']}")
     print(f"output={output_path}")
 
 

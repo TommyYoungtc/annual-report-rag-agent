@@ -35,7 +35,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate in-scope hard no-answer queries")
     parser.add_argument(
         "--embedding-model",
-        default=r".\cache\models\Qwen3-Embedding-0.6B-modelscope",
+        default=r".\cache\models\bge-small-zh-v1.5-annual-report-v1",
     )
     parser.add_argument(
         "--reranker-model",
@@ -47,16 +47,32 @@ def parse_args() -> argparse.Namespace:
         "--hard-no-answer",
         default="data/eval/annual_report_hard_no_answer_dev_v1.jsonl",
     )
-    parser.add_argument("--dev-results", default="outputs/agent_dev_metrics_v2.json")
+    parser.add_argument(
+        "--dev-results",
+        default="outputs/agent_dev_metrics_bge_final_v1.json",
+    )
     parser.add_argument(
         "--embedding-cache",
-        default="cache/embeddings/pypdf_qwen3_0.6b_768.npz",
+        default="cache/embeddings/pypdf_bge_small_annual_report_v1_384.npz",
+    )
+    parser.add_argument("--embedding-batch-size", type=int, default=32)
+    parser.add_argument("--embedding-max-length", type=int, default=384)
+    parser.add_argument(
+        "--embedding-query-instruction",
+        default="为这个句子生成表示以用于检索相关文章：",
+    )
+    parser.add_argument(
+        "--embedding-query-template",
+        default="{instruction}{query}",
     )
     parser.add_argument("--candidate-k", type=int, default=30)
     parser.add_argument("--rerank-candidates", type=int, default=10)
     parser.add_argument("--top-k", type=int, default=10)
     parser.add_argument("--bm25-weight", type=float, default=10.0)
-    parser.add_argument("--output", default="outputs/hard_no_answer_metrics_v1.json")
+    parser.add_argument(
+        "--output",
+        default="outputs/hard_no_answer_metrics_bge_final_v1.json",
+    )
     return parser.parse_args()
 
 
@@ -143,8 +159,12 @@ def main() -> None:
     with np.load(embedding_cache_path, allow_pickle=False) as cache:
         if cache["chunk_ids"].astype(str).tolist() != [chunk.chunk_id for chunk in chunks]:
             raise ValueError("embedding cache does not match corpus")
-        if str(cache["model"].item()) != args.embedding_model:
+        cached_model_path = project_path(str(cache["model"].item()))
+        requested_model_path = project_path(args.embedding_model)
+        if cached_model_path.resolve() != requested_model_path.resolve():
             raise ValueError("embedding cache does not match model")
+        if int(cache["max_length"].item()) != args.embedding_max_length:
+            raise ValueError("embedding cache does not match max length")
         cached_embeddings = np.asarray(cache["embeddings"], dtype=np.float32)
 
     import torch
@@ -155,12 +175,10 @@ def main() -> None:
     encoder = SentenceTransformerEncoder(
         args.embedding_model,
         device=args.device,
-        batch_size=4,
-        max_length=768,
-        query_instruction=(
-            "Given a Chinese annual report question, retrieve passages "
-            "that directly support the answer."
-        ),
+        batch_size=args.embedding_batch_size,
+        max_length=args.embedding_max_length,
+        query_instruction=args.embedding_query_instruction or None,
+        query_template=args.embedding_query_template,
     )
     dense = DenseRetriever(chunks, encoder, document_embeddings=cached_embeddings)
     bm25 = BM25Retriever(chunks)
@@ -247,6 +265,19 @@ def main() -> None:
             "frozen": False,
         },
         "frozen_test_evaluated": False,
+        "models": {
+            "embedding": args.embedding_model,
+            "reranker": args.reranker_model,
+        },
+        "configuration": {
+            "candidate_k": args.candidate_k,
+            "rerank_candidates": args.rerank_candidates,
+            "top_k": args.top_k,
+            "bm25_weight": args.bm25_weight,
+            "embedding_max_length": args.embedding_max_length,
+            "embedding_query_instruction": args.embedding_query_instruction,
+            "embedding_query_template": args.embedding_query_template,
+        },
         "metrics": {
             "baseline_hard_refusal_accuracy": sum(
                 row["baseline_status"] == "refused" for row in details

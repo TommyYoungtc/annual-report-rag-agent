@@ -1,0 +1,87 @@
+{
+  "configuration_id": "annual-report-agent-final-v1",
+  "status": "locked",
+  "locked_at": "2026-07-28T14:54:53.559526+08:00",
+  "quality_gates": {
+    "dev": "passed",
+    "hard_no_answer": "passed",
+    "frozen_test": "pending_one_time_run"
+  },
+  "artifacts": {
+    "corpus": {
+      "path": "data\\processed\\pypdf_corpus.jsonl",
+      "bytes": 4554602,
+      "sha256": "42c8cb6af393bff8562abc6acffd7fe763f82405309f630c1fe83f91091ec8c2"
+    },
+    "embedding_model": {
+      "path": "cache\\models\\bge-small-zh-v1.5-annual-report-v1\\model.safetensors",
+      "bytes": 95823472,
+      "sha256": "5c9d31909fa1c4a6fa7f4470e527b2ec07a8f373cba2ba9f7c408f84d9d72f36"
+    },
+    "embedding_cache": {
+      "path": "cache\\embeddings\\pypdf_bge_small_annual_report_v1_384.npz",
+      "bytes": 5873122,
+      "sha256": "e46ab2dfbc4d8b12fa96d43b2afccab70a03d3bf69b3de5d265b6d2e1df2d5fb"
+    },
+    "reranker_model": {
+      "path": "cache\\models\\Qwen3-Reranker-0.6B-modelscope\\model.safetensors",
+      "bytes": 1191588280,
+      "sha256": "27cd75a405b9c1b46b59abfd88aaa209e6fed2a1972cde9b70e7659537c5e65b"
+    },
+    "dev_set": {
+      "path": "data\\eval\\annual_report_dev_v2.jsonl",
+      "bytes": 20449,
+      "sha256": "6d270400e0a21399d4e8f6ab299ec403de879e9e9b7816bb56262cc2999fe41f"
+    },
+    "hard_no_answer_set": {
+      "path": "data\\eval\\annual_report_hard_no_answer_dev_v1.jsonl",
+      "bytes": 8556,
+      "sha256": "ed9c733d9ace5b0e45341a62d5b60ae9bd7b227dc3282a7e8ecb9f3673909888"
+    },
+    "frozen_test": {
+      "path": "data\\eval\\annual_report_test_v2.jsonl",
+      "bytes": 10007,
+      "sha256": "0376913b2ec6107c409a472ba6ef589ebda7703b512f39044f1b3dc687815480"
+    },
+    "dev_result": {
+      "path": "outputs\\agent_dev_metrics_bge_final_v1.json",
+      "bytes": 101205,
+      "sha256": "cff8250267d7ad2be0d2e351b66286f369232f6346e7d6051353e17c66143517"
+    },
+    "hard_no_answer_result": {
+      "path": "outputs\\hard_no_answer_metrics_bge_final_v1.json",
+      "bytes": 19822,
+      "sha256": "425cdd7c00df5f4c0c3e989a1afb59c59e8b4f7e818f80ea85c60a99844367b4"
+    },
+    "runtime_source": {
+      "path": "src\\annual_report_agent\\runtime.py",
+      "bytes": 9422,
+      "sha256": "613e777bd0c6bf3dcd1f69fd6eb305b3270277c475a49d8280978b197930fa9b"
+    },
+    "dense_source": {
+      "path": "src\\annual_report_agent\\retrieval\\dense.py",
+      "bytes": 4691,
+      "sha256": "14f4aeddb574a379b09c2d8fe8b9a41d371595d0906ad72e1dceb7a8ebd6c6ca"
+    },
+    "reranker_source": {
+      "path": "src\\annual_report_agent\\retrieval\\reranker.py",
+      "bytes": 5336,
+      "sha256": "2670dcdf0cb522660d03d908e028362db2c469dcb4b1ddd8bf1211afc9e9395f"
+    },
+    "answerer_source": {
+      "path": "src\\annual_report_agent\\agent\\answerer.py",
+      "bytes": 11829,
+      "sha256": "dda1d37091f4f9fef0227905953ae7294a533ffa5386624bf9e7c767af2523ca"
+    },
+    "evaluation_source": {
+      "path": "scripts\\run_agent_evaluation.py",
+      "bytes": 17222,
+      "sha256": "85a839f16359f70aabcbb39403aa844aac527178582b7963c70b31f3f9387d7e"
+    },
+    "configuration": {
+      "path": "configs\\final_v1.yaml",
+      "bytes": 1422,
+      "sha256": "d25173b8f5ac1412a87ac0e445cad5e24e15f90e4f3fe51baab0a029a71175d6"
+    }
+  }
+}

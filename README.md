@@ -12,7 +12,7 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - 结构感知 Markdown 分块器；
 - 不依赖第三方库的 BM25 基线；
 - Reciprocal Rank Fusion（RRF）混合召回；
-- Sentence Transformers/Qwen3 Dense Retrieval 适配器；
+- Sentence Transformers/BGE/Qwen3 Dense Retrieval 适配器；
 - 公司/年份元数据过滤与年报章节查询扩展；
 - 可复用的文档向量缓存与加权 RRF；
 - 顺序卸载 Embedding 后再加载 Qwen3 原生 yes/no-logit scorer 的 8GB 显存安全重排链路；
@@ -24,17 +24,19 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - 18题范围内困难无答案集与查询约束—证据蕴含检查；
 - FastAPI接口、本地Web演示与8GB显存安全的串行模型运行时；
 - 可离线运行的合成年报样例；
-- 单元测试和第一周任务清单。
+- BGE-small 难负例微调、配置哈希锁与一次性冻结测试门禁；
+- 68 个自动化测试和完整 Bad Case 报告。
 
-后续版本将加入 Reranker、FastAPI、受控 Agent 工作流和小模型微调。
+最终结果与限制见 [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md)，简历和面试表述见
+[docs/RESUME_BULLETS.md](docs/RESUME_BULLETS.md)。
 
 ## 硬件策略
 
 本项目按 RTX 4060 8GB 设计：
 
 - PDF 逐份解析，不并发加载；
-- Qwen3-Embedding-0.6B 和 Reranker-0.6B 分时加载；
-- Embedding 最大长度默认 768，batch size 默认 4；
+- 微调 BGE-small 和 Qwen3-Reranker-0.6B 分时加载；
+- Embedding 最大长度默认 384，batch size 默认 32；
 - Reranker 每批 1～2 条；
 - 不进行 7B 模型训练；
 - 训练环节使用小型 Embedding 模型；
@@ -281,4 +283,7 @@ annual-report-agent/
 [docs/ANSWER_PIPELINE.md](docs/ANSWER_PIPELINE.md)、
 [docs/HARD_NO_ANSWER.md](docs/HARD_NO_ANSWER.md)、
 [docs/LOCAL_DEMO.md](docs/LOCAL_DEMO.md)、
+[docs/EMBEDDING_FINETUNING.md](docs/EMBEDDING_FINETUNING.md)、
+[docs/FINAL_REPORT.md](docs/FINAL_REPORT.md)、
+[docs/RESUME_BULLETS.md](docs/RESUME_BULLETS.md) 和
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。

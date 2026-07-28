@@ -35,8 +35,10 @@ class RuntimeSettings:
     rerank_candidates: int = 10
     top_k: int = 10
     bm25_weight: float = 10.0
-    embedding_batch_size: int = 4
-    embedding_max_length: int = 768
+    embedding_batch_size: int = 32
+    embedding_max_length: int = 384
+    embedding_query_instruction: str = "为这个句子生成表示以用于检索相关文章："
+    embedding_query_template: str = "{instruction}{query}"
     reranker_batch_size: int = 1
     reranker_max_length: int = 1024
     minimum_reranker_score: float = 0.0
@@ -50,8 +52,11 @@ class RuntimeSettings:
             embedding_cache_path=root
             / "cache"
             / "embeddings"
-            / "pypdf_qwen3_0.6b_768.npz",
-            embedding_model_path=root / "cache" / "models" / "Qwen3-Embedding-0.6B-modelscope",
+            / "pypdf_bge_small_annual_report_v1_384.npz",
+            embedding_model_path=root
+            / "cache"
+            / "models"
+            / "bge-small-zh-v1.5-annual-report-v1",
             reranker_model_path=root / "cache" / "models" / "Qwen3-Reranker-0.6B-modelscope",
         )
 
@@ -130,10 +135,8 @@ class AnnualReportAgentRuntime:
             device=self.settings.device,
             batch_size=self.settings.embedding_batch_size,
             max_length=self.settings.embedding_max_length,
-            query_instruction=(
-                "Given a Chinese annual report question, retrieve passages "
-                "that directly support the answer."
-            ),
+            query_instruction=self.settings.embedding_query_instruction,
+            query_template=self.settings.embedding_query_template,
         )
         self._dense = DenseRetriever(
             self.chunks,

@@ -55,7 +55,7 @@ def build_runtime(tmp_path: Path):
         chunk_ids=np.asarray([chunk.chunk_id for chunk in chunks]),
         embeddings=np.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=np.float32),
         model=np.asarray(str(embedding_model)),
-        max_length=np.asarray(768),
+        max_length=np.asarray(384),
     )
     settings = RuntimeSettings(
         project_root=tmp_path,
@@ -84,6 +84,14 @@ def build_runtime(tmp_path: Path):
         reranker_factory=reranker_factory,
     )
     return runtime, calls
+
+
+def test_project_settings_use_finetuned_bge(tmp_path: Path) -> None:
+    settings = RuntimeSettings.from_project(tmp_path)
+    assert settings.embedding_model_path.name == "bge-small-zh-v1.5-annual-report-v1"
+    assert settings.embedding_cache_path.name == "pypdf_bge_small_annual_report_v1_384.npz"
+    assert settings.embedding_max_length == 384
+    assert settings.embedding_query_template == "{instruction}{query}"
 
 
 def test_runtime_answers_with_page_citation(tmp_path: Path) -> None:
