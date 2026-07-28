@@ -21,6 +21,7 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - 60题开发集、30题冻结测试集和15题无答案集；
 - 确定性问题路由、公司/年份范围守卫与结构化拒答；
 - Hybrid + Reranker证据回答、Decimal计算和Chunk/页码/原文引用；
+- 18题范围内困难无答案集与查询约束—证据蕴含检查；
 - 可离线运行的合成年报样例；
 - 单元测试和第一周任务清单。
 
@@ -171,6 +172,17 @@ python scripts/replay_agent_answers.py
 这些规则使用了Dev错误案例迭代，不能当成冻结测试成绩；GPU、延迟、初始错误与限制见
 `docs/ANSWER_PIPELINE.md`。
 
+构建、验证并运行范围内困难无答案实验：
+
+```powershell
+python scripts/build_hard_no_answer.py
+python scripts/validate_hard_no_answer.py
+python scripts/run_hard_no_answer_evaluation.py
+```
+
+18题困难集中，不加语义约束时系统会18题全部误答；查询约束—证据蕴含检查可拒绝18/18且不影响
+60题Dev。单一Reranker阈值无法达到同样权衡，详见 `docs/HARD_NO_ANSWER.md`。
+
 或者安装为可编辑包：
 
 ```powershell
@@ -255,4 +267,5 @@ annual-report-agent/
 [docs/EVAL_SET_V2.md](docs/EVAL_SET_V2.md)、
 [docs/AGENT_ROUTING.md](docs/AGENT_ROUTING.md) 和
 [docs/ANSWER_PIPELINE.md](docs/ANSWER_PIPELINE.md)、
+[docs/HARD_NO_ANSWER.md](docs/HARD_NO_ANSWER.md)、
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。

@@ -49,6 +49,12 @@ class FactSpec:
     require_explicit_unit: bool = False
 
 
+@dataclass(frozen=True, slots=True)
+class EvidenceConstraint:
+    name: str
+    patterns: tuple[str, ...]
+
+
 FACT_SPECS: tuple[tuple[tuple[str, ...], FactSpec], ...] = (
     (
         ("研发投入占营业收入", "研发投入比例"),
@@ -113,6 +119,64 @@ def infer_fact_spec(query: str) -> FactSpec | None:
         if any(keyword.replace(" ", "") in normalized for keyword in keywords):
             return spec
     return None
+
+
+def infer_evidence_constraints(query: str, spec: FactSpec) -> tuple[EvidenceConstraint, ...]:
+    normalized = re.sub(r"\s+", "", query)
+    constraints = []
+    for term in ("海外", "境外", "欧洲", "北美"):
+        if term in normalized:
+            constraints.append(
+                EvidenceConstraint(
+                    f"region:{term}",
+                    (
+                        rf"{term}.{{0,40}}{spec.label_pattern}",
+                        rf"{spec.label_pattern}.{{0,40}}{term}",
+                    ),
+                )
+            )
+    if spec.name == "technical_employees":
+        for term in ("女性", "博士", "硕士"):
+            if term in normalized:
+                constraints.append(
+                    EvidenceConstraint(
+                        f"technical_employee_attribute:{term}",
+                        (
+                            rf"{term}.{{0,4}}技术人员",
+                            rf"技术人员.{{0,4}}{term}",
+                        ),
+                    )
+                )
+    product_terms = (
+        "储能电池系统",
+        "动力电池系统",
+        "智慧教育业务",
+        "智慧医疗业务",
+        "新能源汽车业务",
+    )
+    for term in product_terms:
+        if term in normalized:
+            constraints.append(
+                EvidenceConstraint(
+                    f"business_segment:{term}",
+                    (
+                        rf"{term}.{{0,12}}{spec.label_pattern}",
+                        rf"{spec.label_pattern}.{{0,12}}{term}",
+                    ),
+                )
+            )
+    return tuple(constraints)
+
+
+def evidence_satisfies_constraints(
+    text: str,
+    constraints: tuple[EvidenceConstraint, ...],
+) -> bool:
+    normalized = _normalize_text(text)
+    return all(
+        any(re.search(pattern, normalized) for pattern in constraint.patterns)
+        for constraint in constraints
+    )
 
 
 def _normalize_text(text: str) -> str:
@@ -209,12 +273,14 @@ def answer_from_evidence(
     scope: CorpusScope,
     *,
     minimum_reranker_score: float = 0.0,
+    enforce_query_constraints: bool = True,
 ) -> AgentAnswer:
     if route.should_refuse:
         return _refused(route.refusal_reason or "out_of_scope", refusal_message(route, scope))
     spec = infer_fact_spec(query)
     if spec is None:
         return _refused("unsupported_fact", "当前受控回答器尚不支持该问题所需的财务字段。")
+    constraints = infer_evidence_constraints(query, spec) if enforce_query_constraints else ()
 
     requested_years = route.years
     requested_companies = set(route.companies)
@@ -226,6 +292,8 @@ def answer_from_evidence(
         if requested_years and result.chunk.year not in requested_years:
             continue
         if result.source == "reranker" and result.score < minimum_reranker_score:
+            continue
+        if constraints and not evidence_satisfies_constraints(result.chunk.text, constraints):
             continue
         value = extract_value(result, spec)
         priority = _evidence_priority(result, spec)

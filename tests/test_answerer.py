@@ -169,6 +169,70 @@ def test_prefers_annual_summary_over_higher_reranker_score() -> None:
     assert answer.citations[0].page == 7
 
 
+def test_refuses_total_rnd_when_query_requires_overseas_breakdown() -> None:
+    query = "宁德时代2025年的海外研发投入金额是多少？"
+    route = route_query(query, SCOPE)
+    evidence = result(
+        "近三年公司研发投入金额 项目2025年 "
+        "研发投入金额（千元）22,146,581",
+        year=2025,
+    )
+    baseline = answer_from_evidence(
+        query,
+        route,
+        [evidence],
+        SCOPE,
+        enforce_query_constraints=False,
+    )
+    constrained = answer_from_evidence(query, route, [evidence], SCOPE)
+    assert baseline.status == "answered"
+    assert constrained.status == "refused"
+    assert constrained.reason == "insufficient_evidence"
+
+
+def test_accepts_value_when_required_qualifier_is_entailed() -> None:
+    query = "宁德时代2025年的境外研发投入金额是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("境外研发投入金额（千元）1,234", year=2025)],
+        SCOPE,
+    )
+    assert answer.answer == "1,234千元"
+
+
+def test_refuses_total_technical_staff_for_intersection_query() -> None:
+    query = "比亚迪2024年女性技术人员有多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("技术人员 122,924 女性员工 20,000", company="比亚迪")],
+        SCOPE,
+    )
+    assert answer.status == "refused"
+
+
+def test_refuses_company_profit_for_segment_profit_query() -> None:
+    query = "科大讯飞2025年智慧教育业务的净利润是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result(
+                "智慧教育业务保持增长。主要会计数据和财务指标 "
+                "归属于上市公司股东的净利润（元）839,390,861.36",
+                company="科大讯飞",
+                year=2025,
+            )
+        ],
+        SCOPE,
+    )
+    assert answer.status == "refused"
+
+
 def test_preserves_dividend_tax_note() -> None:
     query = "比亚迪2024年度每10股派发多少现金红利？"
     route = route_query(query, SCOPE)
