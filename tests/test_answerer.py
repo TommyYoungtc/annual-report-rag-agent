@@ -1,0 +1,192 @@
+from __future__ import annotations
+
+from decimal import Decimal
+
+from annual_report_agent.agent import (
+    CorpusScope,
+    answer_from_evidence,
+    calculate_change,
+    route_query,
+)
+from annual_report_agent.schemas import Chunk, SearchResult
+
+SCOPE = CorpusScope(("宁德时代", "比亚迪", "科大讯飞"), (2024, 2025))
+
+
+def result(
+    text: str,
+    *,
+    company: str = "宁德时代",
+    year: int = 2024,
+    page: int | None = 9,
+    score: float = 0.9,
+) -> SearchResult:
+    chunk = Chunk(
+        chunk_id=f"{company}-{year}:0001",
+        document_id=f"{company}-{year}",
+        company=company,
+        year=year,
+        section="主要财务指标",
+        page=page,
+        text=text,
+    )
+    return SearchResult(chunk=chunk, score=score, rank=1, source="reranker")
+
+
+def test_answers_single_fact_with_citation() -> None:
+    query = "宁德时代2024年的营业收入是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("单位：千元\n营业收入 362,012,554 400,917,045 -9.70%")],
+        SCOPE,
+    )
+    assert answer.status == "answered"
+    assert answer.answer == "362,012,554千元"
+    assert answer.citations[0].page == 9
+    assert "362,012,554" in answer.citations[0].quote
+
+
+def test_handles_wrapped_table_label() -> None:
+    query = "科大讯飞2025年归属于上市公司股东的净利润是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result(
+                "归属于上市公司股东\n的净利润（元） 839,390,861.36 560,162,663.16",
+                company="科大讯飞",
+                year=2025,
+            )
+        ],
+        SCOPE,
+    )
+    assert answer.answer == "839,390,861.36元"
+
+
+def test_rnd_amount_does_not_capture_year_from_heading() -> None:
+    query = "宁德时代2024年的研发投入金额是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result(
+                "近三年公司研发投入金额及占营业收入的比例 "
+                "项目 2024年 2023年 研发投入金额（千元）18,606,756 18,356,108"
+            )
+        ],
+        SCOPE,
+    )
+    assert answer.answer == "18,606,756千元"
+
+
+def test_inherits_page_level_unit_for_wrapped_label() -> None:
+    query = "宁德时代2025年末归属于上市公司股东的净资产是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result(
+                "单位：千元 "
+                + "其他表格内容 " * 30
+                + "归属于上市公司股东\n的净资产 337,107,747 246,930,033",
+                year=2025,
+            )
+        ],
+        SCOPE,
+    )
+    assert answer.answer == "337,107,747千元"
+
+
+def test_answers_cross_year_and_calculates_change() -> None:
+    query = "比亚迪2024到2025年营业收入增长了多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result("营业收入（元） 777,102,455,000.00", company="比亚迪", year=2024),
+            result("营业收入（元） 803,964,958,000.00", company="比亚迪", year=2025),
+        ],
+        SCOPE,
+    )
+    assert answer.status == "answered"
+    assert answer.answer is not None
+    assert "26,862,503,000.00元" in answer.answer
+    assert "3.46%" in answer.answer
+    assert len(answer.citations) == 2
+
+
+def test_refuses_when_one_year_is_missing() -> None:
+    query = "宁德时代2024年和2025年的净利润分别是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("归属于上市公司股东的净利润（千元）50,744,682")],
+        SCOPE,
+    )
+    assert answer.status == "refused"
+    assert answer.reason == "insufficient_evidence"
+
+
+def test_refuses_low_reranker_score() -> None:
+    query = "宁德时代2024年的营业收入是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("营业收入（千元）362,012,554", score=0.1)],
+        SCOPE,
+        minimum_reranker_score=0.5,
+    )
+    assert answer.status == "refused"
+
+
+def test_prefers_annual_summary_over_higher_reranker_score() -> None:
+    query = "科大讯飞2024年归属于上市公司股东的净利润是多少？"
+    route = route_query(query, SCOPE)
+    wrong = result(
+        "八、分季度主要财务指标 "
+        "归属于上市公司股东的净利润（元）-300,468,030.20",
+        company="科大讯飞",
+        page=8,
+        score=0.99,
+    )
+    gold = result(
+        "六、主要会计数据和财务指标 "
+        "归属于上市公司股东的净利润（元）560,162,663.16",
+        company="科大讯飞",
+        page=7,
+        score=0.90,
+    )
+    answer = answer_from_evidence(query, route, [wrong, gold], SCOPE)
+    assert answer.answer == "560,162,663.16元"
+    assert answer.citations[0].page == 7
+
+
+def test_preserves_dividend_tax_note() -> None:
+    query = "比亚迪2024年度每10股派发多少现金红利？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result(
+                "向全体股东每10股派发现金红利39.74元（含税），送红股0股。",
+                company="比亚迪",
+            )
+        ],
+        SCOPE,
+    )
+    assert answer.answer == "39.74元（含税）"
+
+
+def test_calculator_handles_zero_baseline() -> None:
+    change = calculate_change(Decimal(0), Decimal(10))
+    assert change.absolute_change == Decimal(10)
+    assert change.percentage_change is None

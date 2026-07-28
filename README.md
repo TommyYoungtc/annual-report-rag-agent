@@ -20,6 +20,7 @@ PDF解析 → 结构化分块 → BM25/Dense混合召回 → Reranker
 - 6份真实年报的数据清单与断点安全下载脚本；
 - 60题开发集、30题冻结测试集和15题无答案集；
 - 确定性问题路由、公司/年份范围守卫与结构化拒答；
+- Hybrid + Reranker证据回答、Decimal计算和Chunk/页码/原文引用；
 - 可离线运行的合成年报样例；
 - 单元测试和第一周任务清单。
 
@@ -154,6 +155,22 @@ python scripts/evaluate_scope_guard.py
 100%。这些无答案题只覆盖公司/年份越界，不代表系统已经解决“范围内但缺少证据”的语义拒答；
 完整说明见 `docs/AGENT_ROUTING.md`。
 
+运行端到端证据回答评测：
+
+```powershell
+python scripts/run_agent_evaluation.py
+```
+
+如果只修改确定性证据选择逻辑，可复用已保存的Reranker输出：
+
+```powershell
+python scripts/replay_agent_answers.py
+```
+
+当前60题 Dev的答案精确匹配、引用Chunk精度和页码准确率均为100%，15题 No-answer全部拒答。
+这些规则使用了Dev错误案例迭代，不能当成冻结测试成绩；GPU、延迟、初始错误与限制见
+`docs/ANSWER_PIPELINE.md`。
+
 或者安装为可编辑包：
 
 ```powershell
@@ -237,4 +254,5 @@ annual-report-agent/
 [docs/EVAL_SET_V1.md](docs/EVAL_SET_V1.md) 和
 [docs/EVAL_SET_V2.md](docs/EVAL_SET_V2.md)、
 [docs/AGENT_ROUTING.md](docs/AGENT_ROUTING.md) 和
+[docs/ANSWER_PIPELINE.md](docs/ANSWER_PIPELINE.md)、
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。
