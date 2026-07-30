@@ -1,0 +1,65 @@
+{
+  "configuration_id": "annual-report-agent-final-v2-blind",
+  "status": "sealed_after_single_successful_frozen_test_run",
+  "sealed_at": "2026-07-30T13:09:27.313497+08:00",
+  "successful_frozen_test_runs": 1,
+  "no_post_test_tuning_or_rerun": true,
+  "lock_integrity_after_test": "passed",
+  "final_lock": {
+    "path": "configs/final_v2_blind.lock.json",
+    "sha256": "a7aa0a348d8c825701e7e5f387ef0fec8e6e3c284e56b5b6292489092b3b79ed"
+  },
+  "frozen_test": {
+    "path": "data/eval/annual_report_v2_blind_test.jsonl",
+    "questions": 32,
+    "sha256": "c924180364ea4641755872f8bcaccdee8915489e96a863cd48d443f9af7bb2dc",
+    "holdout_companies": [
+      "立讯精密",
+      "迈瑞医疗"
+    ],
+    "development_company_overlap": []
+  },
+  "result": {
+    "local_path": "outputs/v2_blind_frozen_test_result.json",
+    "sha256": "44e5db7f6c78372a4797fa3e52c74646cb798493acb3b1b54f21bac2c90335b7",
+    "bytes": 63261
+  },
+  "metrics": {
+    "exact_answer_accuracy": 0.9375,
+    "exact_answers": "30/32",
+    "all_gold_evidence_recall_at_10": 1.0,
+    "all_gold_evidence_retrieved": "32/32",
+    "citation_chunk_precision": 0.9375,
+    "citation_page_set_accuracy": 0.9375,
+    "gold_oracle_exact_answer_accuracy": 0.9375,
+    "hard_no_answer_development_refusal_accuracy": 1.0
+  },
+  "runtime": {
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "reranker_peak_memory_mb": 1771.05,
+    "mean_rerank_latency_ms": 1553.58,
+    "p95_rerank_latency_ms": 2763.94
+  },
+  "failures": [
+    {
+      "query_id": "v2-blind-test-010",
+      "fact": "立讯精密2025年归属于上市公司股东的净利润",
+      "expected_answer": "16,599,769,785.64元",
+      "predicted_answer": "3,043,574,684.79元",
+      "cause": "quarterly_page_selected_over_annual_summary"
+    },
+    {
+      "query_id": "v2-blind-test-011",
+      "fact": "立讯精密2025年经营活动产生的现金流量净额",
+      "expected_answer": "17,325,329,533.97元",
+      "predicted_answer": "-6,691,655,420.46元",
+      "cause": "quarterly_page_selected_over_annual_summary"
+    }
+  ],
+  "invalidated_prior_result": {
+    "name": "early_v2_hikvision_midea_100_percent",
+    "reason": "companies were inspected and used for error-driven rule iteration",
+    "allowed_use": "development_only",
+    "allowed_as_test_claim": false
+  }
+}

@@ -45,6 +45,11 @@ class MetadataFilteringTests(unittest.TestCase):
         self.assertIn("主要会计数据", expanded)
         self.assertIn("财务指标", expanded)
 
+    def test_expands_rnd_staff_query_with_exact_table_label(self) -> None:
+        expanded = expand_query_with_section_anchors("2024年有多少研发人员？")
+        self.assertIn("公司研发人员情况", expanded)
+        self.assertIn("研发人员数量", expanded)
+
     def test_leaves_unknown_query_unchanged(self) -> None:
         query = "公司的核心竞争力是什么？"
         self.assertEqual(expand_query_with_section_anchors(query), query)

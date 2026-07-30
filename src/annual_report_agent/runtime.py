@@ -34,7 +34,7 @@ class RuntimeSettings:
     candidate_k: int = 30
     rerank_candidates: int = 10
     top_k: int = 10
-    bm25_weight: float = 10.0
+    bm25_weight: float = 3.0
     embedding_batch_size: int = 32
     embedding_max_length: int = 384
     embedding_query_instruction: str = "为这个句子生成表示以用于检索相关文章："
@@ -48,15 +48,15 @@ class RuntimeSettings:
         root = project_root.resolve()
         return cls(
             project_root=root,
-            corpus_path=root / "data" / "processed" / "pypdf_corpus.jsonl",
+            corpus_path=root
+            / "data"
+            / "processed"
+            / "pypdf_corpus_v2_blind.jsonl",
             embedding_cache_path=root
             / "cache"
             / "embeddings"
-            / "pypdf_bge_small_annual_report_v1_384.npz",
-            embedding_model_path=root
-            / "cache"
-            / "models"
-            / "bge-small-zh-v1.5-annual-report-v1",
+            / "pypdf_bge_small_annual_report_v2_blind_384.npz",
+            embedding_model_path=root / "cache" / "models" / "bge-small-zh-v1.5-annual-report-v1",
             reranker_model_path=root / "cache" / "models" / "Qwen3-Reranker-0.6B-modelscope",
         )
 

@@ -10,6 +10,7 @@ from .router import CorpusScope, QueryRoute, refusal_message
 
 NUMBER = r"-?\d[\d,]*(?:\.\d+)?"
 SPACE = r"\s*"
+UNIT = r"千元|万元|亿元|元/股|元|人"
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,8 +58,28 @@ class EvidenceConstraint:
 
 FACT_SPECS: tuple[tuple[tuple[str, ...], FactSpec], ...] = (
     (
-        ("研发投入占营业收入", "研发投入比例"),
-        FactSpec("rnd_ratio", r"研发投入占营业收入(?:的)?比例", "%"),
+        ("基本每股收益",),
+        FactSpec("basic_eps", rf"基本每股收{SPACE}益", "元/股"),
+    ),
+    (
+        ("加权平均净资产收益率",),
+        FactSpec("roe", rf"加权平均净资产收益{SPACE}率", "%"),
+    ),
+    (
+        ("资产总额", "总资产"),
+        FactSpec("total_assets", rf"(?:资产总{SPACE}额|总资{SPACE}产)"),
+    ),
+    (
+        ("研发人员数量", "研发人员有多少", "多少研发人员"),
+        FactSpec(
+            "rnd_staff",
+            rf"研发(?:及技术)?人员数量(?:{SPACE}[（(]人[）)])?",
+            "人",
+        ),
+    ),
+    (
+        ("研发投入占营业收入", "研发费用占营业收入", "研发投入比例", "研发费用比例"),
+        FactSpec("rnd_ratio", r"研发(?:投入|费用)占营业收入(?:的)?比例", "%"),
     ),
     (
         ("归属于上市公司股东的净资产",),
@@ -135,15 +156,15 @@ def infer_evidence_constraints(query: str, spec: FactSpec) -> tuple[EvidenceCons
                     ),
                 )
             )
-    if spec.name == "technical_employees":
+    if spec.name in {"technical_employees", "rnd_staff"}:
         for term in ("女性", "博士", "硕士"):
             if term in normalized:
                 constraints.append(
                     EvidenceConstraint(
-                        f"technical_employee_attribute:{term}",
+                        f"{spec.name}_attribute:{term}",
                         (
-                            rf"{term}.{{0,4}}技术人员",
-                            rf"技术人员.{{0,4}}{term}",
+                            rf"{term}.{{0,8}}{spec.label_pattern}",
+                            rf"{spec.label_pattern}.{{0,8}}{term}",
                         ),
                     )
                 )
@@ -153,6 +174,8 @@ def infer_evidence_constraints(query: str, spec: FactSpec) -> tuple[EvidenceCons
         "智慧教育业务",
         "智慧医疗业务",
         "新能源汽车业务",
+        "主业产品及服务",
+        "智能家居业务",
     )
     for term in product_terms:
         if term in normalized:
@@ -180,7 +203,7 @@ def evidence_satisfies_constraints(
 
 
 def _normalize_text(text: str) -> str:
-    normalized = re.sub(r"\s*([,.%])\s*", r"\1", text)
+    normalized = re.sub(r"\s*([,.%/（）()])\s*", r"\1", text)
     return re.sub(r"\s+", " ", normalized)
 
 
@@ -203,12 +226,12 @@ def _build_pattern(spec: FactSpec) -> re.Pattern[str]:
     if spec.require_explicit_unit:
         return re.compile(
             rf"{spec.label_pattern}"
-            rf"{SPACE}[（(](?P<unit>千元|万元|亿元|元|人)[）)]"
+            rf"{SPACE}[（(](?P<unit>{UNIT})[）)]"
             rf"[^\d-]{{0,30}}(?P<value>{NUMBER})(?P<percent>%?)"
         )
     return re.compile(
         rf"{spec.label_pattern}"
-        rf"(?:{SPACE}[（(](?P<unit>千元|万元|亿元|元|人)[）)])?"
+        rf"(?:{SPACE}[（(](?P<unit>{UNIT})[）)])?"
         rf"[^\d-]{{0,30}}(?P<value>{NUMBER})(?P<percent>%?)"
     )
 
@@ -246,18 +269,20 @@ def _evidence_priority(result: SearchResult, spec: FactSpec) -> tuple[int, int, 
     text = _normalize_text(result.chunk.text)
     preferred_markers = {
         "revenue": ("主要会计数据和财务指标",),
+        "basic_eps": ("主要会计数据和财务指标",),
+        "roe": ("主要会计数据和财务指标",),
+        "total_assets": ("主要会计数据和财务指标",),
+        "rnd_staff": ("公司研发人员情况",),
         "net_profit": ("主要会计数据和财务指标",),
         "operating_cash_flow": ("主要会计数据和财务指标",),
         "net_assets": ("主要会计数据和财务指标",),
         "rnd_amount": ("近三年公司研发投入金额",),
-        "rnd_ratio": ("近三年公司研发投入金额",),
+        "rnd_ratio": ("近三年公司研发投入金额", "公司研发投入情况"),
         "employees_total": ("公司员工情况", "员工数量、专业构成及教育程度"),
         "technical_employees": ("公司员工情况", "员工数量、专业构成及教育程度"),
         "dividend_per_10": ("董事会审议的报告期利润分配预案", "年度报告 第一节 重要提示"),
     }
-    marker_score = sum(
-        marker in text for marker in preferred_markers.get(spec.name, ())
-    )
+    marker_score = sum(marker in text for marker in preferred_markers.get(spec.name, ()))
     page = result.chunk.page if result.chunk.page is not None else 10**9
     return marker_score, -page, result.score
 

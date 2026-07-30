@@ -13,10 +13,14 @@ dist/
 data/raw/*
 !data/raw/.gitkeep
 !data/raw/manifest.jsonl
+!data/raw/manifest_v2.jsonl
+!data/raw/manifest_v2_blind.jsonl
 data/parsed/*
 !data/parsed/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/eval/annual_report_v2_test_draft.jsonl
+data/eval/annual_report_v2_manifest_draft.json
 models/
 cache/
 outputs/*

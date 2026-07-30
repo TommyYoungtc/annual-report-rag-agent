@@ -1,0 +1,38 @@
+{
+  "dataset_id": "annual-report-agent-v2-blind-eval",
+  "status": "frozen_before_first_model_run",
+  "frozen_at": "2026-07-30T13:04:41.086896+08:00",
+  "candidate_lock": {
+    "path": "configs\\v2_blind_candidate.lock.json",
+    "locked_at": "2026-07-30T12:56:17.399071+08:00",
+    "sha256": "e30b16b1f5d7b3f7e2af1835ce9866c8613cbbbe9f1a55e3f5825cbcf55f184b"
+  },
+  "holdout_selected_after_candidate_lock": true,
+  "holdout_companies": [
+    "立讯精密",
+    "迈瑞医疗"
+  ],
+  "holdout_documents": [
+    "luxshare-2024",
+    "luxshare-2025",
+    "mindray-2024",
+    "mindray-2025"
+  ],
+  "development_company_overlap": [],
+  "test_questions": 32,
+  "fact_keys": [
+    "basic_eps",
+    "net_profit",
+    "operating_cash_flow",
+    "revenue",
+    "rnd_ratio",
+    "rnd_staff",
+    "roe",
+    "total_assets"
+  ],
+  "frozen_test": {
+    "path": "data\\eval\\annual_report_v2_blind_test.jsonl",
+    "sha256": "c924180364ea4641755872f8bcaccdee8915489e96a863cd48d443f9af7bb2dc"
+  },
+  "successful_model_runs_at_freeze": 0
+}

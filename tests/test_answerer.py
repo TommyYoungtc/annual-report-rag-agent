@@ -48,6 +48,97 @@ def test_answers_single_fact_with_citation() -> None:
     assert "362,012,554" in answer.citations[0].quote
 
 
+def test_answers_basic_eps_with_per_share_unit() -> None:
+    query = "宁德时代2024年的基本每股收益是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("基本每股收益（元/股） 11.58 10.06 15.11%")],
+        SCOPE,
+    )
+    assert answer.answer == "11.58元/股"
+
+
+def test_answers_weighted_average_roe() -> None:
+    query = "宁德时代2024年的加权平均净资产收益率是多少？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("加权平均净资产收益\n率 24.13% 24.04% 0.09%")],
+        SCOPE,
+    )
+    assert answer.answer == "24.13%"
+
+
+def test_answers_total_assets_for_both_common_labels() -> None:
+    cases = (
+        ("宁德时代", "资产总额（千元） 786,658,123", "786,658,123千元"),
+        ("科大讯飞", "总资产（元） 41,478,899,803.20", "41,478,899,803.20元"),
+    )
+    for company, evidence, expected in cases:
+        query = f"{company}2024年末的资产总额是多少？"
+        route = route_query(query, SCOPE)
+        answer = answer_from_evidence(
+            query,
+            route,
+            [result(evidence, company=company)],
+            SCOPE,
+        )
+        assert answer.answer == expected
+
+
+def test_answers_rnd_staff_without_confusing_ratio() -> None:
+    query = "比亚迪2024年有多少研发人员？"
+    route = route_query(query, SCOPE)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [result("研发人员数量（人） 121,598 102,844 18.24%", company="比亚迪")],
+        SCOPE,
+    )
+    assert answer.answer == "121,598人"
+
+
+def test_answers_combined_rnd_and_technical_staff_label() -> None:
+    query = "海康威视2025年有多少研发人员？"
+    scope = CorpusScope(companies=("海康威视",), years=(2025,))
+    route = route_query(query, scope)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result(
+                "研发及技术人员数量（人） 26,806 28,272 -5.19%",
+                company="海康威视",
+                year=2025,
+            )
+        ],
+        scope,
+    )
+    assert answer.answer == "26,806人"
+
+
+def test_answers_rnd_expense_ratio_synonym() -> None:
+    query = "美的集团2025年研发投入占营业收入的比例是多少？"
+    scope = CorpusScope(companies=("美的集团",), years=(2025,))
+    route = route_query(query, scope)
+    answer = answer_from_evidence(
+        query,
+        route,
+        [
+            result(
+                "公司研发投入情况 研发费用占营业收入比例 3.90% 3.99%",
+                company="美的集团",
+                year=2025,
+            )
+        ],
+        scope,
+    )
+    assert answer.answer == "3.90%"
+
+
 def test_handles_wrapped_table_label() -> None:
     query = "科大讯飞2025年归属于上市公司股东的净利润是多少？"
     route = route_query(query, SCOPE)
@@ -151,15 +242,13 @@ def test_prefers_annual_summary_over_higher_reranker_score() -> None:
     query = "科大讯飞2024年归属于上市公司股东的净利润是多少？"
     route = route_query(query, SCOPE)
     wrong = result(
-        "八、分季度主要财务指标 "
-        "归属于上市公司股东的净利润（元）-300,468,030.20",
+        "八、分季度主要财务指标 归属于上市公司股东的净利润（元）-300,468,030.20",
         company="科大讯飞",
         page=8,
         score=0.99,
     )
     gold = result(
-        "六、主要会计数据和财务指标 "
-        "归属于上市公司股东的净利润（元）560,162,663.16",
+        "六、主要会计数据和财务指标 归属于上市公司股东的净利润（元）560,162,663.16",
         company="科大讯飞",
         page=7,
         score=0.90,
@@ -173,8 +262,7 @@ def test_refuses_total_rnd_when_query_requires_overseas_breakdown() -> None:
     query = "宁德时代2025年的海外研发投入金额是多少？"
     route = route_query(query, SCOPE)
     evidence = result(
-        "近三年公司研发投入金额 项目2025年 "
-        "研发投入金额（千元）22,146,581",
+        "近三年公司研发投入金额 项目2025年 研发投入金额（千元）22,146,581",
         year=2025,
     )
     baseline = answer_from_evidence(
@@ -212,6 +300,27 @@ def test_refuses_total_technical_staff_for_intersection_query() -> None:
         SCOPE,
     )
     assert answer.status == "refused"
+
+
+def test_refuses_total_rnd_staff_for_intersection_query() -> None:
+    query = "美的集团2025年女性研发人员数量是多少？"
+    scope = CorpusScope(companies=("美的集团",), years=(2025,))
+    route = route_query(query, scope)
+    evidence = result(
+        "研发人员数量（人） 23,926 研发人员数量占比 12.05%",
+        company="美的集团",
+        year=2025,
+    )
+    baseline = answer_from_evidence(
+        query,
+        route,
+        [evidence],
+        scope,
+        enforce_query_constraints=False,
+    )
+    constrained = answer_from_evidence(query, route, [evidence], scope)
+    assert baseline.answer == "23,926人"
+    assert constrained.status == "refused"
 
 
 def test_refuses_company_profit_for_segment_profit_query() -> None:

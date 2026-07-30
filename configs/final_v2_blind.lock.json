@@ -1,0 +1,121 @@
+{
+  "configuration_id": "annual-report-agent-final-v2-blind",
+  "status": "locked",
+  "locked_at": "2026-07-30T13:04:43.488751+08:00",
+  "candidate_locked_at": "2026-07-30T12:56:17.399071+08:00",
+  "quality_gates": {
+    "development_122": "passed_100_percent",
+    "hard_no_answer_30": "passed_100_percent",
+    "frozen_test_32": "pending_single_run"
+  },
+  "holdout_policy": {
+    "holdout_companies_selected_after_this_lock": true,
+    "source_and_hyperparameters_must_remain_unchanged": true,
+    "test_labels_created_after_lock": true,
+    "test_frozen_before_first_end_to_end_run": true,
+    "maximum_successful_frozen_test_runs": 1
+  },
+  "test_result_output": "outputs\\v2_blind_frozen_test_result.json",
+  "artifacts": {
+    "candidate_lock": {
+      "path": "configs/v2_blind_candidate.lock.json",
+      "bytes": 4259,
+      "sha256": "e30b16b1f5d7b3f7e2af1835ce9866c8613cbbbe9f1a55e3f5825cbcf55f184b"
+    },
+    "configuration": {
+      "path": "configs/v2_blind_candidate.yaml",
+      "bytes": 1367,
+      "sha256": "ceef07ae057f6223bee5758c99978ef8ffa0afde3d1f8817e2de44779edbf37c"
+    },
+    "raw_manifest": {
+      "path": "data/raw/manifest_v2_blind.jsonl",
+      "bytes": 3564,
+      "sha256": "b01583752019966c77e9659f68ddd72e0792d4e5d5ee93113bfdeef833a6deef"
+    },
+    "corpus": {
+      "path": "data/processed/pypdf_corpus_v2_blind.jsonl",
+      "bytes": 11208391,
+      "sha256": "e86ca4c1e61fa0216940166f1b21802f409d47c04e7ca34152fcf25f10e161bc"
+    },
+    "extraction_report": {
+      "path": "data/parsed/pypdf_v2_blind/extraction_report.json",
+      "bytes": 5879,
+      "sha256": "1c3001c61f8dd6549e850d3ea5d514c9fb73acb64fb1e4ef10bd839c89bcc146"
+    },
+    "embedding_model": {
+      "path": "cache/models/bge-small-zh-v1.5-annual-report-v1/model.safetensors",
+      "bytes": 95823472,
+      "sha256": "5c9d31909fa1c4a6fa7f4470e527b2ec07a8f373cba2ba9f7c408f84d9d72f36"
+    },
+    "embedding_cache": {
+      "path": "cache/embeddings/pypdf_bge_small_annual_report_v2_blind_384.npz",
+      "bytes": 14510266,
+      "sha256": "2af438c109930018ad11175882da3bf2635bd39b75956789608d979e3e3efe04"
+    },
+    "reranker_model": {
+      "path": "cache/models/Qwen3-Reranker-0.6B-modelscope/model.safetensors",
+      "bytes": 1191588280,
+      "sha256": "27cd75a405b9c1b46b59abfd88aaa209e6fed2a1972cde9b70e7659537c5e65b"
+    },
+    "development_set": {
+      "path": "data/eval/annual_report_v2_dev.jsonl",
+      "bytes": 45151,
+      "sha256": "c362fb664a032c7b8888b5a84abfff683e2718e31da3b36a7c54f06884c41339"
+    },
+    "hard_no_answer_development_set": {
+      "path": "data/eval/annual_report_v2_hard_no_answer_dev.jsonl",
+      "bytes": 14516,
+      "sha256": "e5fa94dafeb9ae8cee6e9a1f2b8575166517fc0f52c457fa1b089dcf065f1333"
+    },
+    "development_result": {
+      "path": "outputs/v2_blind_dev_metrics_locked_candidate.json",
+      "bytes": 203582,
+      "sha256": "2170820be8b298470adc445555b82933a8c37d5bc552f5f0032f05130f324aff"
+    },
+    "frozen_test": {
+      "path": "data/eval/annual_report_v2_blind_test.jsonl",
+      "bytes": 12037,
+      "sha256": "c924180364ea4641755872f8bcaccdee8915489e96a863cd48d443f9af7bb2dc"
+    },
+    "frozen_test_manifest": {
+      "path": "data/eval/annual_report_v2_blind_manifest.json",
+      "bytes": 1063,
+      "sha256": "1efd04a702e545f021454bc2ff6369d80f1d0e5d864e35c87d532e767c066290"
+    },
+    "runtime_source": {
+      "path": "src/annual_report_agent/runtime.py",
+      "bytes": 9436,
+      "sha256": "be754c3366b6a20c6982bd8ed0fbe4a2df1c654757b5e05b88ebe01c6dd63917"
+    },
+    "answerer_source": {
+      "path": "src/annual_report_agent/agent/answerer.py",
+      "bytes": 12861,
+      "sha256": "5636df89b006e4bc988b5472c7888fda91a4537b970c7aeb3296d998cef74609"
+    },
+    "query_filter_source": {
+      "path": "src/annual_report_agent/retrieval/query_filters.py",
+      "bytes": 2031,
+      "sha256": "0477fa36dcfe23fd217078f3ddef4e3c149dc2a91a178f1595e8e917b1aaedc6"
+    },
+    "dense_source": {
+      "path": "src/annual_report_agent/retrieval/dense.py",
+      "bytes": 4691,
+      "sha256": "14f4aeddb574a379b09c2d8fe8b9a41d371595d0906ad72e1dceb7a8ebd6c6ca"
+    },
+    "reranker_source": {
+      "path": "src/annual_report_agent/retrieval/reranker.py",
+      "bytes": 5336,
+      "sha256": "2670dcdf0cb522660d03d908e028362db2c469dcb4b1ddd8bf1211afc9e9395f"
+    },
+    "evaluation_source": {
+      "path": "scripts/run_agent_evaluation.py",
+      "bytes": 17222,
+      "sha256": "85a839f16359f70aabcbb39403aa844aac527178582b7963c70b31f3f9387d7e"
+    },
+    "test_builder_source": {
+      "path": "scripts/build_and_freeze_v2_blind_test.py",
+      "bytes": 9313,
+      "sha256": "a67f5761055759559457f36a5d883a015e0c509d2c3c88fb3396be92bde33a05"
+    }
+  }
+}

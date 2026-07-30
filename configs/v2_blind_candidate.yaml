@@ -1,0 +1,41 @@
+configuration_id: annual-report-agent-v2-blind-candidate
+status: ready_for_pre_holdout_lock
+
+models:
+  embedding: cache/models/bge-small-zh-v1.5-annual-report-v1
+  reranker: cache/models/Qwen3-Reranker-0.6B-modelscope
+
+embedding:
+  max_length: 384
+  batch_size: 32
+  query_instruction: "为这个句子生成表示以用于检索相关文章："
+  query_template: "{instruction}{query}"
+
+retrieval:
+  candidate_k: 30
+  rerank_candidates: 10
+  top_k: 10
+  bm25_weight: 3.0
+
+answering:
+  minimum_reranker_score: 0.0
+  enforce_query_constraints: true
+
+development_artifacts:
+  corpus: data/processed/pypdf_corpus_v2.jsonl
+  embedding_cache: cache/embeddings/pypdf_bge_small_annual_report_v2_384.npz
+  dev_set: data/eval/annual_report_v2_dev.jsonl
+  hard_no_answer_set: data/eval/annual_report_v2_hard_no_answer_dev.jsonl
+  dev_result: outputs/v2_blind_dev_metrics_locked_candidate.json
+
+future_holdout_artifacts:
+  manifest: data/raw/manifest_v2_blind.jsonl
+  corpus: data/processed/pypdf_corpus_v2_blind.jsonl
+  embedding_cache: cache/embeddings/pypdf_bge_small_annual_report_v2_blind_384.npz
+  frozen_test: data/eval/annual_report_v2_blind_test.jsonl
+
+holdout_policy:
+  contaminated_prior_v2_excluded_from_claims: true
+  select_holdout_companies_after_candidate_lock: true
+  no_source_or_hyperparameter_changes_after_candidate_lock: true
+  frozen_test_runs_allowed: 1

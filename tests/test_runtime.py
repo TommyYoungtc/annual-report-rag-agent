@@ -86,12 +86,19 @@ def build_runtime(tmp_path: Path):
     return runtime, calls
 
 
-def test_project_settings_use_finetuned_bge(tmp_path: Path) -> None:
+def test_project_settings_use_v2_blind_corpus_and_finetuned_bge(
+    tmp_path: Path,
+) -> None:
     settings = RuntimeSettings.from_project(tmp_path)
     assert settings.embedding_model_path.name == "bge-small-zh-v1.5-annual-report-v1"
-    assert settings.embedding_cache_path.name == "pypdf_bge_small_annual_report_v1_384.npz"
+    assert settings.corpus_path.name == "pypdf_corpus_v2_blind.jsonl"
+    assert (
+        settings.embedding_cache_path.name
+        == "pypdf_bge_small_annual_report_v2_blind_384.npz"
+    )
     assert settings.embedding_max_length == 384
     assert settings.embedding_query_template == "{instruction}{query}"
+    assert settings.bm25_weight == 3.0
 
 
 def test_runtime_answers_with_page_citation(tmp_path: Path) -> None:
