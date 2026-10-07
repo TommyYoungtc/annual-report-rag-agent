@@ -1,0 +1,183 @@
+{
+  "dataset_id": "annual-report-agent-adaptive-v3-frozen-eval",
+  "status": "frozen_before_first_model_run",
+  "frozen_at": "2026-10-07T19:29:22.177018+08:00",
+  "candidate_lock": {
+    "path": "configs/adaptive_retrieval_v1.lock.json",
+    "locked_at": "2026-10-07T19:01:49.141617+08:00",
+    "sha256": "c7375835a2ca8800a7de837a7817d5f777a1e0c43dd068b0aed55bbd4fe454a9",
+    "status": "candidate_locked_before_new_holdout_selection"
+  },
+  "holdout_selected_after_candidate_lock": true,
+  "labels_built_after_candidate_lock": true,
+  "holdout_companies": [
+    "海尔智家",
+    "贵州茅台",
+    "隆基绿能"
+  ],
+  "holdout_documents": [
+    "haier-2024",
+    "haier-2025",
+    "longi-2024",
+    "longi-2025",
+    "moutai-2024",
+    "moutai-2025"
+  ],
+  "development_companies": [
+    "宁德时代",
+    "比亚迪",
+    "海康威视",
+    "科大讯飞",
+    "立讯精密",
+    "美的集团",
+    "迈瑞医疗"
+  ],
+  "development_company_overlap": [],
+  "test_questions": 60,
+  "category_counts": {
+    "single_year_fact": 20,
+    "cross_year_comparison": 10,
+    "calculation": 8,
+    "annual_quarter_confusion": 8,
+    "multi_evidence": 6,
+    "no_answer": 8
+  },
+  "answerable_questions": 52,
+  "no_answer_questions": 8,
+  "manual_verification": {
+    "answer_page_and_gold_chunk_checked": true,
+    "method": "direct inspection of extracted annual-report page text plus consistency checks",
+    "no_answer_constraint_checks": [
+      {
+        "query_id": "v3-frozen-test-053",
+        "scoped_chunks_checked": 257,
+        "constraint_match_count": 0
+      },
+      {
+        "query_id": "v3-frozen-test-054",
+        "scoped_chunks_checked": 251,
+        "constraint_match_count": 0
+      },
+      {
+        "query_id": "v3-frozen-test-055",
+        "scoped_chunks_checked": 424,
+        "constraint_match_count": 0
+      },
+      {
+        "query_id": "v3-frozen-test-056",
+        "scoped_chunks_checked": 421,
+        "constraint_match_count": 0
+      },
+      {
+        "query_id": "v3-frozen-test-057",
+        "scoped_chunks_checked": 421,
+        "constraint_match_count": 0
+      },
+      {
+        "query_id": "v3-frozen-test-058",
+        "scoped_chunks_checked": 409,
+        "constraint_match_count": 0
+      },
+      {
+        "query_id": "v3-frozen-test-059",
+        "scoped_chunks_checked": 432,
+        "constraint_match_count": 0
+      },
+      {
+        "query_id": "v3-frozen-test-060",
+        "scoped_chunks_checked": 409,
+        "constraint_match_count": 0
+      }
+    ]
+  },
+  "source_urls": {
+    "moutai-2024": "https://www.moutai.com.cn/mtgf/articleFileDir/2025-04/08/8055b7bed7db41bdbc617f4c9b9ec591.pdf",
+    "moutai-2025": "https://big5.sse.com.cn/site/cht/www.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-04-17/600519_20260417_9QS4.pdf",
+    "haier-2024": "https://stockn.xueqiu.com/SH600690/20250327091484.pdf",
+    "haier-2025": "https://static.cninfo.com.cn/finalpage/2026-03-27/1225038336.PDF",
+    "longi-2024": "https://stockn.xueqiu.com/SH601012/20250506275223.pdf",
+    "longi-2025": "https://big5.sse.com.cn/site/cht/www.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-04-29/601012_20260429_OI5U.pdf"
+  },
+  "artifacts": {
+    "candidate_lock": {
+      "path": "configs/adaptive_retrieval_v1.lock.json",
+      "bytes": 10136,
+      "sha256": "c7375835a2ca8800a7de837a7817d5f777a1e0c43dd068b0aed55bbd4fe454a9"
+    },
+    "source_manifest": {
+      "path": "data/raw/manifest_v3_frozen.jsonl",
+      "bytes": 1598,
+      "sha256": "260bdf2eec53da420a207cc8feca11509ebf91c3180707734954a8b1ebfa0069"
+    },
+    "source_pdfs": {
+      "moutai-2024": {
+        "path": "data/raw/moutai_2024_annual_report.pdf",
+        "bytes": 3626217,
+        "sha256": "5299f4940e2ce4e91084b73dc457d558b9d335fa76fbfee6227e4254eb7f4a30"
+      },
+      "moutai-2025": {
+        "path": "data/raw/moutai_2025_annual_report.pdf",
+        "bytes": 1082847,
+        "sha256": "474905deeaf0f875fc0a1b097a626c0c7852c427faadc5d7fc7816cbf45ea288"
+      },
+      "haier-2024": {
+        "path": "data/raw/haier_2024_annual_report.pdf",
+        "bytes": 5167345,
+        "sha256": "cb2830d04860a0c18a491b9998c0928d1b77e740f07824a34f7543d823f7b10b"
+      },
+      "haier-2025": {
+        "path": "data/raw/haier_2025_annual_report.pdf",
+        "bytes": 1823191,
+        "sha256": "14186f9f9b47f687c527ba14825664f3b09e51759d581636cddcc248f26e3660"
+      },
+      "longi-2024": {
+        "path": "data/raw/longi_2024_annual_report.pdf",
+        "bytes": 1875694,
+        "sha256": "c9e11fc7ec92a59d7d1ccfcf8a4f1fbb35ee8ec0435df16a3e968497b5f64bb8"
+      },
+      "longi-2025": {
+        "path": "data/raw/longi_2025_annual_report.pdf",
+        "bytes": 3311470,
+        "sha256": "10233740d54740b89dfd772eecac5f04d8fef639489acd3b18b1a35e81bce2c1"
+      }
+    },
+    "extraction_report": {
+      "path": "data/parsed/pypdf_v3_frozen/extraction_report.json",
+      "bytes": 1699,
+      "sha256": "ce3995f0b10a25f029a55c0d7459b6afc4de4accee82c2b3e4a455e56682fe36"
+    },
+    "corpus": {
+      "path": "data/processed/pypdf_corpus_v3_frozen.jsonl",
+      "bytes": 3441232,
+      "sha256": "9b4dc60ae132ebb285690705317cde22de7dc830cdf311d22046e08f8dafe1bc"
+    },
+    "embedding_cache": {
+      "path": "cache/embeddings/pypdf_bge_small_annual_report_v3_frozen_384.npz",
+      "bytes": 2646480,
+      "sha256": "fb43cea3ffb96fbee84bb8b096a09a5085d4ba35216f85bbddbf83c9ce4ab6b4"
+    },
+    "frozen_test": {
+      "path": "data/eval/annual_report_v3_frozen_test.jsonl",
+      "bytes": 46464,
+      "sha256": "39192e84bf8f82d77f08a058ae500ec4adbb053b4a4f8b3550daba733cd1720d"
+    },
+    "freeze_builder": {
+      "path": "scripts/build_and_freeze_adaptive_v3_test.py",
+      "bytes": 32056,
+      "sha256": "201f9768481193433ef252cbea7af119a89b4e19f27946b38be5e6fab7a588a4"
+    },
+    "embedding_builder": {
+      "path": "scripts/build_adaptive_v3_embedding_cache.py",
+      "bytes": 3804,
+      "sha256": "34d02ef6a87216e0a20ab09bbae5ea974fcf2370edff1698dcbdadf49abd241c"
+    },
+    "single_run_evaluator": {
+      "path": "scripts/run_adaptive_v3_frozen_test.py",
+      "bytes": 13589,
+      "sha256": "f93f68c4a8d962cd692b9c2c8b0fe3aa07e449b0e69a099bad03f1e608da36b8"
+    }
+  },
+  "successful_model_runs_at_freeze": 0,
+  "maximum_successful_frozen_test_runs": 1,
+  "post_run_policy": "Seal immediately after the first successful A/B/C run; do not modify verifier, rewriter, models, budgets, scoring rules, corpus, labels or parameters based on results."
+}

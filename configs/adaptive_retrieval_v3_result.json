@@ -1,0 +1,64 @@
+{
+  "result_id": "annual-report-agent-adaptive-v3-single-run-result",
+  "status": "sealed_after_single_successful_frozen_test_run",
+  "successful_frozen_test_runs": 1,
+  "maximum_successful_frozen_test_runs": 1,
+  "candidate_modified_after_lock": false,
+  "post_result_tuning_permitted": false,
+  "candidate_lock": {
+    "path": "configs/adaptive_retrieval_v1.lock.json",
+    "sha256": "c7375835a2ca8800a7de837a7817d5f777a1e0c43dd068b0aed55bbd4fe454a9"
+  },
+  "frozen_manifest": {
+    "path": "data/eval/annual_report_v3_frozen_manifest.json",
+    "sha256": "3fcdfd97fa3d3aad86046e4cfbaa89a1e642febc03c12f47ec0c58e191909fd6"
+  },
+  "frozen_test": {
+    "path": "data/eval/annual_report_v3_frozen_test.jsonl",
+    "sha256": "39192e84bf8f82d77f08a058ae500ec4adbb053b4a4f8b3550daba733cd1720d"
+  },
+  "output": {
+    "path": "outputs/adaptive_retrieval_v3_frozen_test.json",
+    "bytes": 947840,
+    "sha256": "a585478d3cf81b3ea3dfef20eaf1d89da20b0c74240dbb9cfa87574cb7f8de24"
+  },
+  "metrics_summary": {
+    "A": {
+      "overall_task_accuracy": 0.6666666666666666,
+      "answerable_exact_answer_accuracy": 0.6153846153846154,
+      "no_answer_refusal_accuracy": 1.0,
+      "average_retrieval_rounds": 1.0,
+      "amortized_mean_latency_ms": 1605.12477333347,
+      "cost_per_correct_answer": {
+        "estimated_api_cost_usd": 0.0,
+        "amortized_latency_ms": 2407.687160000205,
+        "passages_reranked": 15.0
+      }
+    },
+    "B": {
+      "overall_task_accuracy": 0.7666666666666667,
+      "answerable_exact_answer_accuracy": 0.7307692307692307,
+      "no_answer_refusal_accuracy": 1.0,
+      "average_retrieval_rounds": 2.8,
+      "amortized_mean_latency_ms": 4778.231103338509,
+      "cost_per_correct_answer": {
+        "estimated_api_cost_usd": 0.0,
+        "amortized_latency_ms": 6232.475352180659,
+        "passages_reranked": 36.52173913043478
+      }
+    },
+    "C": {
+      "overall_task_accuracy": 0.7666666666666667,
+      "answerable_exact_answer_accuracy": 0.7307692307692307,
+      "no_answer_refusal_accuracy": 1.0,
+      "average_retrieval_rounds": 1.4833333333333334,
+      "amortized_mean_latency_ms": 2566.707432951597,
+      "cost_per_correct_answer": {
+        "estimated_api_cost_usd": 0.0,
+        "amortized_latency_ms": 3347.8792603716493,
+        "passages_reranked": 19.347826086956523
+      }
+    }
+  },
+  "seal_note": "This file was created immediately after the only permitted successful run. The verifier, rewriter, models, parameters, corpus and labels must not be changed in response to these results."
+}

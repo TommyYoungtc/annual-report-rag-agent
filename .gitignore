@@ -15,15 +15,19 @@ data/raw/*
 !data/raw/manifest.jsonl
 !data/raw/manifest_v2.jsonl
 !data/raw/manifest_v2_blind.jsonl
+!data/raw/manifest_v3_frozen.jsonl
 data/parsed/*
 !data/parsed/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
 data/eval/annual_report_v2_test_draft.jsonl
 data/eval/annual_report_v2_manifest_draft.json
+!data/eval/annual_report_v3_frozen_test.jsonl
+!data/eval/annual_report_v3_frozen_manifest.json
 models/
 cache/
 outputs/*
+!outputs/adaptive_retrieval_v3_frozen_test.json
 !outputs/.gitkeep
 
 # IDE / OS

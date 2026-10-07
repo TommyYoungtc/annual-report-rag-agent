@@ -301,6 +301,14 @@ annual-report-agent/
 
 ## 7. 当前里程碑
 
+Adaptive Retrieval 已完成一次独立冻结测试。候选配置锁定后，另外选择贵州茅台、海尔智家和
+隆基绿能三家与开发阶段零重叠的公司，构建 6 份年报、1,393 页、2,194 个 Chunk 的独立语料，
+并逐题核验 60 题冻结测试集。唯一一次正式运行中，Static RAG、Always Agentic 和 Adaptive
+的全部任务正确率分别为 66.7%、76.7% 和 76.7%，三者无答案拒答准确率均为 100%。Adaptive
+在保持 Always Agentic 相同质量的同时，将平均检索轮数、平均延迟和重排 Passage 数分别降低
+47.0%、46.3% 和 47.0%。结果已立即封存，详见
+[docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md](docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md)。
+
 查看 [PROJECT_PLAN.md](PROJECT_PLAN.md)、[docs/WEEK1_CHECKLIST.md](docs/WEEK1_CHECKLIST.md)、
 [docs/EVAL_SET_V1.md](docs/EVAL_SET_V1.md) 和
 [docs/EVAL_SET_V2.md](docs/EVAL_SET_V2.md)、
@@ -312,5 +320,6 @@ annual-report-agent/
 [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md)、
 [docs/ADAPTIVE_RETRIEVAL_EXPERIMENT.md](docs/ADAPTIVE_RETRIEVAL_EXPERIMENT.md)、
 [docs/ADAPTIVE_RETRIEVAL_DEV_REPORT.md](docs/ADAPTIVE_RETRIEVAL_DEV_REPORT.md)、
+[docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md](docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md)、
 [docs/RESUME_BULLETS.md](docs/RESUME_BULLETS.md) 和
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。
