@@ -1,0 +1,109 @@
+configuration_id: annual-report-agent-adaptive-retrieval-v1
+status: ready_for_development_run
+
+hypothesis:
+  primary: "More retrieval rounds are not always better; evidence-aware escalation should preserve answer quality while spending fewer retrieval and reranking resources than always-agentic retrieval."
+  secondary: "Annual-versus-quarterly evidence mismatches should trigger a targeted second retrieval round."
+
+base_pipeline:
+  embedding_model: cache/models/bge-small-zh-v1.5-annual-report-v1
+  reranker_model: cache/models/Qwen3-Reranker-0.6B-modelscope
+  corpus: data/processed/pypdf_corpus_v2_blind.jsonl
+  embedding_cache: cache/embeddings/pypdf_bge_small_annual_report_v2_blind_384.npz
+  device: cuda
+  candidate_k: 30
+  rerank_candidates: 10
+  top_k: 10
+  bm25_weight: 3.0
+  minimum_reranker_score: 0.0
+  embedding_batch_size: 32
+  embedding_max_length: 384
+  embedding_query_instruction: "为这个句子生成表示以用于检索相关文章："
+  embedding_query_template: "{instruction}{query}"
+  reranker_batch_size: 1
+  reranker_max_length: 1024
+
+orchestration:
+  verifier: deterministic_evidence_verifier_v1
+  query_rewriter: rule_based_financial_rewriter_v1
+  refusal_confirmation_rounds: 2
+  planner_model: null
+  planner_input_tokens_per_round: 0
+  planner_output_tokens_per_round: 0
+  planner_api_cost_usd_per_round: 0.0
+  note: "This candidate isolates retrieval-control policy effects. A later ablation may replace the deterministic rewriter with one fixed LLM under the same budget and trace schema."
+
+systems:
+  A:
+    name: static_rag
+    policy: static_rag
+    max_rounds: 1
+  B:
+    name: always_agentic
+    policy: always_agentic
+    max_rounds: 3
+  C:
+    name: adaptive_budget_aware
+    policy: adaptive_budget_aware
+    max_rounds: 3
+
+development_evaluation:
+  answerable_dev: data/eval/annual_report_v2_dev.jsonl
+  hard_no_answer_dev: data/eval/annual_report_v2_hard_no_answer_dev.jsonl
+  known_failure_canary: data/eval/annual_report_v2_blind_test.jsonl
+  known_failure_canary_ids:
+    - v2-blind-test-010
+    - v2-blind-test-011
+  canary_policy: "Development-only regression canaries. They are excluded from aggregate Dev metrics and can never be reported as a new frozen-test result."
+  output: outputs/adaptive_retrieval_v1_dev.json
+
+metrics:
+  quality:
+    - exact_answer_accuracy
+    - all_gold_evidence_recall_at_10
+    - citation_chunk_precision
+    - citation_page_set_accuracy
+    - hard_no_answer_refusal_accuracy
+  routing:
+    - average_retrieval_rounds
+    - escalation_rate
+    - unnecessary_escalation_rate
+    - missed_escalation_rate
+    - known_failure_recovery_rate
+  budget:
+    - dense_queries
+    - bm25_queries
+    - reranker_calls
+    - passages_reranked
+    - planner_input_tokens
+    - planner_output_tokens
+    - estimated_api_cost_usd
+    - amortized_mean_latency_ms
+    - amortized_p50_latency_ms
+    - amortized_p95_latency_ms
+    - amortized_latency_per_correct_answer_ms
+    - passages_reranked_per_correct_answer
+
+development_gates:
+  static_answerable_exact_accuracy_min: 1.0
+  static_no_answer_refusal_accuracy_min: 1.0
+  always_agentic_answerable_exact_accuracy_min: 1.0
+  adaptive_answerable_exact_accuracy_min: 1.0
+  adaptive_no_answer_refusal_accuracy_min: 1.0
+  adaptive_average_rounds_must_be_below_always_agentic: true
+
+future_holdout_policy:
+  select_new_companies_only_after_candidate_lock: true
+  development_company_overlap_allowed: false
+  build_labels_only_after_candidate_lock: true
+  freeze_test_before_first_model_run: true
+  maximum_successful_frozen_test_runs: 1
+  do_not_reuse_v2_blind_test_for_claims: true
+  locked_items:
+    - source_code
+    - models
+    - corpus_and_embedding_cache
+    - verifier_and_rewriter
+    - system_budgets
+    - prompts_if_added
+    - scoring_rules
