@@ -28,6 +28,7 @@ models/
 cache/
 outputs/*
 !outputs/adaptive_retrieval_v3_frozen_test.json
+!outputs/token_efficiency_v4_dev_replay.json
 !outputs/.gitkeep
 
 # IDE / OS

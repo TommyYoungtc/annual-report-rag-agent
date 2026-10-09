@@ -1,0 +1,86 @@
+configuration_id: annual-report-agent-token-efficiency-v4-dev
+status: development_replay_not_locked
+
+experiment_contract:
+  frozen_test_evaluated: false
+  v3_artifacts_are_read_only: true
+  source_trajectory: outputs/adaptive_retrieval_v1_dev.json
+  source_system: C
+  evaluation_split: old_dev_only
+  claim_scope: >-
+    Tokenizer-exact counterfactual replay. It validates context-pruning effects on the
+    deterministic answerer, but does not validate LLM answer quality for model routing
+    or prompt compression. Provider usage is required before API-cost claims.
+
+data:
+  corpus: data/processed/pypdf_corpus_v2_blind.jsonl
+  answerable_dev: data/eval/annual_report_v2_dev.jsonl
+  hard_no_answer_dev: data/eval/annual_report_v2_hard_no_answer_dev.jsonl
+
+tokenizer:
+  model: cache/models/Qwen3-Reranker-0.6B-modelscope
+  counting_method: exact_post_chat_template
+
+models:
+  small:
+    model_id: provider-small-placeholder
+    relative_cost_multiplier: 0.25
+    input_per_million_usd: null
+    output_per_million_usd: null
+    cached_input_per_million_usd: null
+  large:
+    model_id: provider-large-placeholder
+    relative_cost_multiplier: 1.0
+    input_per_million_usd: null
+    output_per_million_usd: null
+    cached_input_per_million_usd: null
+
+normalized_cost:
+  input_token_weight: 1.0
+  output_token_weight: 4.0
+  note: >-
+    Relative token units support provider-neutral comparisons. They are not USD and
+    must not be described as an API bill.
+
+profiles:
+  baseline:
+    model_policy: always_large
+    prompt: full
+    context_policy: full
+    context_top_k: 10
+    context_max_tokens: null
+  routing_only:
+    model_policy: adaptive
+    prompt: full
+    context_policy: full
+    context_top_k: 10
+    context_max_tokens: null
+  prompt_only:
+    model_policy: always_large
+    prompt: compressed
+    context_policy: full
+    context_top_k: 10
+    context_max_tokens: null
+  context_only:
+    model_policy: always_large
+    prompt: full
+    context_policy: evidence_span
+    context_top_k: 10
+    context_max_tokens: 4096
+    context_window_chars: 420
+  combined:
+    model_policy: adaptive
+    prompt: compressed
+    context_policy: evidence_span
+    context_top_k: 10
+    context_max_tokens: 4096
+    context_window_chars: 420
+
+quality_gates:
+  exact_answer_accuracy_drop_max: 0.0
+  hard_no_answer_refusal_accuracy_drop_max: 0.0
+  all_gold_evidence_recall_drop_max: 0.0
+  citation_chunk_precision_drop_max: 0.0
+  citation_page_set_accuracy_drop_max: 0.0
+
+output: outputs/token_efficiency_v4_dev_replay.json

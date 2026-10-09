@@ -309,6 +309,14 @@ Adaptive Retrieval 已完成一次独立冻结测试。候选配置锁定后，�
 47.0%、46.3% 和 47.0%。结果已立即封存，详见
 [docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md](docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md)。
 
+Token-Aware V4 已完成第一阶段开发回放：在旧 Dev 的 152 道任务上，组合采用自适应
+small/large 路由、压缩 Prompt 与 Top-10 证据窗口裁剪。使用原生 tokenizer 做
+chat-template 后精确计数时，总 Token 代理量下降 42.67%，五项规则答案质量指标均保持
+100%；归一化成本下降 72.26%。该阶段未调用生成式 Provider，不能作为 API 账单或 LLM
+质量结论。实验边界与完整结果见
+[docs/TOKEN_EFFICIENCY_V4_PROTOCOL.md](docs/TOKEN_EFFICIENCY_V4_PROTOCOL.md) 和
+[docs/TOKEN_EFFICIENCY_V4_DEV_REPORT.md](docs/TOKEN_EFFICIENCY_V4_DEV_REPORT.md)。
+
 查看 [PROJECT_PLAN.md](PROJECT_PLAN.md)、[docs/WEEK1_CHECKLIST.md](docs/WEEK1_CHECKLIST.md)、
 [docs/EVAL_SET_V1.md](docs/EVAL_SET_V1.md) 和
 [docs/EVAL_SET_V2.md](docs/EVAL_SET_V2.md)、
@@ -321,5 +329,7 @@ Adaptive Retrieval 已完成一次独立冻结测试。候选配置锁定后，�
 [docs/ADAPTIVE_RETRIEVAL_EXPERIMENT.md](docs/ADAPTIVE_RETRIEVAL_EXPERIMENT.md)、
 [docs/ADAPTIVE_RETRIEVAL_DEV_REPORT.md](docs/ADAPTIVE_RETRIEVAL_DEV_REPORT.md)、
 [docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md](docs/ADAPTIVE_RETRIEVAL_V3_FROZEN_REPORT.md)、
+[docs/TOKEN_EFFICIENCY_V4_PROTOCOL.md](docs/TOKEN_EFFICIENCY_V4_PROTOCOL.md)、
+[docs/TOKEN_EFFICIENCY_V4_DEV_REPORT.md](docs/TOKEN_EFFICIENCY_V4_DEV_REPORT.md)、
 [docs/RESUME_BULLETS.md](docs/RESUME_BULLETS.md) 和
 [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md)。
